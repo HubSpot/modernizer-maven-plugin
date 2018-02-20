@@ -5,9 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <groupId>org.gaul</groupId>
+    <artifactId>modernizer-maven-parent</artifactId>
+    <version>1.0-hubspot-SNAPSHOT</version>
   </parent>
 
   <groupId>org.gaul</groupId>
