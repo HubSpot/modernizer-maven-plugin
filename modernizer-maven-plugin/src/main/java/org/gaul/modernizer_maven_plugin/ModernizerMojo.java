@@ -212,6 +212,18 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
+        File ignoreClassesFile = new File(
+            outputDirectory, "ModernizerIgnoreAnnotatedElements.txt");
+        if (ignoreClassesFile.exists()) {
+            Collection<String> ignoreClasses =
+                readExclusionsFile(ignoreClassesFile.toString());
+            for (String ignoreClass : ignoreClasses) {
+                allIgnoreFullClassNamePatterns.add(
+                    Pattern.compile(ignoreClass
+                        .replace('.', '/')));
+            }
+        }
+
         modernizer = new Modernizer(javaVersion, allViolations, allExclusions,
                 allExclusionPatterns, ignorePackages,
                 allIgnoreFullClassNamePatterns);
