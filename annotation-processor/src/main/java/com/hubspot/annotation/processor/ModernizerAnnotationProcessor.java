@@ -43,44 +43,75 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     @Override
     public final boolean process(
         Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        FileObject fileObject = null;
-        Writer writer = null;
-        List<Element> annotatedElements = new ArrayList<>();
-
-        // iterating over all supported annotation types
+        List<String> annotatedElements;
         for (TypeElement annotation : annotations) {
-
-          //filtering annotations with the value modernizer
-            for (Element element :
-                roundEnv.getElementsAnnotatedWith(annotation)) {
-                String[] elementValue = element
-                    .getAnnotation(SuppressWarnings.class)
-                    .value();
-                if (elementValue.length == 1 &&
-                    elementValue[0].equals("modernizer")) {
-                    annotatedElements.add(element);
-                }
-            }
-
-            try {
-                fileObject = processingEnv.getFiler().createResource(
-                    StandardLocation.CLASS_OUTPUT, "",
-                    "ModernizerIgnoreAnnotatedElements.txt",
-                    null);
-                writer = fileObject.openWriter();
-                for (Element element : annotatedElements) {
-                    if (element.getKind().isClass()) {
-                        writer.write(processingEnv.getElementUtils()
-                            .getPackageOf(element).getQualifiedName()
-                            .toString() + "." + element.getSimpleName() + "\n");
-                    }
-                }
-                writer.close();
-            } catch (IOException e) {
-                processingEnv.getMessager().printMessage(Kind.ERROR,
-                    "IOException");
-            }
+            annotatedElements = getAnnotatedClasses(roundEnv, annotation);
+            makeAnnotatedClassesFile(annotatedElements);
         }
         return true;
+    }
+
+    private List<String> getAnnotatedClasses(RoundEnvironment roundEnv,
+                                             TypeElement annotation) {
+        List<String> annotatedClasses = new ArrayList<>();
+        for (Element element :
+            roundEnv.getElementsAnnotatedWith(annotation)) {
+            String[] elementValue = element
+                .getAnnotation(SuppressWarnings.class)
+                .value();
+            if (elementValue.length == 1 &&
+                elementValue[0].equals("modernizer")) {
+                if (element.getKind().isClass()) {
+                    annotatedClasses.add(getClassHeader(element));
+                }
+            }
+        }
+        return annotatedClasses;
+    }
+
+    private void makeAnnotatedClassesFile(List<String> annotatedClasses) {
+        FileObject fileObject;
+        Writer writer;
+        try {
+            fileObject = processingEnv.getFiler().createResource(
+                StandardLocation.CLASS_OUTPUT, "",
+                "ModernizerIgnoreAnnotatedElements.txt",
+                null);
+            writer = fileObject.openWriter();
+            for (String element : annotatedClasses) {
+                writer.write(element + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            processingEnv.getMessager().
+                printMessage(Kind.ERROR, e.getMessage());
+        }
+    }
+
+    private String getClassHeader(Element classElement) {
+        String classHeader =
+            processingEnv.getElementUtils().
+                getPackageOf(classElement).getQualifiedName()
+                .toString().replace('.', '/');
+        String className = classElement.getSimpleName().toString();
+        classHeader += "/" + getParentClasses(classElement) + className;
+        processingEnv.getMessager().
+            printMessage(Kind.NOTE, classHeader.replace("$", "\\$"));
+        return classHeader.replace("$", "\\$") + "(\\$.+)?";
+    }
+
+    private String getParentClasses(Element classElement) {
+        List<String> parentClasses = new ArrayList<>();
+        while (classElement.getEnclosingElement().getKind()
+            .toString().equals("CLASS")) {
+            parentClasses.add(classElement.getEnclosingElement()
+                .getSimpleName().toString());
+            classElement = classElement.getEnclosingElement();
+        }
+        StringBuilder parentClassNames = new StringBuilder();
+        for (int index = parentClasses.size() - 1; index >= 0; index--) {
+            parentClassNames.append(parentClasses.get(index) + "$");
+        }
+        return parentClassNames.toString();
     }
 }
