@@ -189,7 +189,7 @@ public final class ModernizerMojo extends AbstractMojo {
         Set<String> allExclusions = new HashSet<String>();
         allExclusions.addAll(exclusions);
         if (exclusionsFile != null) {
-            allExclusions.addAll(readFile(exclusionsFile));
+            allExclusions.addAll(readExclusionsFile(exclusionsFile));
         }
 
         Set<Pattern> allExclusionPatterns = new HashSet<Pattern>();
@@ -213,10 +213,12 @@ public final class ModernizerMojo extends AbstractMojo {
         }
 
         File ignoreClassesFile =
-            new File(outputDirectory, "ModernizerIgnoreAnnotatedClasses.txt");
+            new File(outputDirectory,
+                "modernizer/annotations/modernizer-ignore-" +
+                    "annotated-classes.txt");
         if (ignoreClassesFile.exists()) {
             Collection<String> ignoreClasses =
-                readFile(ignoreClassesFile.toString());
+                readExclusionsFile(ignoreClassesFile.toString());
             for (String ignoreClass : ignoreClasses) {
                 allIgnoreFullClassNamePatterns.add(
                     Pattern.compile(ignoreClass));
@@ -276,28 +278,28 @@ public final class ModernizerMojo extends AbstractMojo {
         }
     }
 
-    private Collection<String> readFile(String filePath)
+    private Collection<String> readExclusionsFile(String exclusionsFilePath)
             throws MojoExecutionException {
         InputStream is = null;
         try {
-            File file = new File(filePath);
+            File file = new File(exclusionsFilePath);
             if (file.exists()) {
-                is = new FileInputStream(filePath);
+                is = new FileInputStream(exclusionsFilePath);
             } else {
                 is = this.getClass().getClassLoader().getResourceAsStream(
-                    filePath);
+                    exclusionsFilePath);
             }
             if (is == null) {
                 throw new MojoExecutionException(
                         "Could not find file: " +
-                            filePath);
+                            exclusionsFilePath);
             }
 
             return Utils.readAllLines(is);
         } catch (IOException ioe) {
             throw new MojoExecutionException(
                     "Error reading file: " +
-                        filePath, ioe);
+                        exclusionsFilePath, ioe);
         } finally {
             Utils.closeQuietly(is);
         }
