@@ -16,8 +16,9 @@
 
 package com.hubspot.annotation.processor;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,15 +72,15 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private void makeAnnotatedClassesFile(List<String> annotatedClasses) {
-        Writer writer = null;
+        FileWriter writer = null;
         try {
-            FileObject fileObject = processingEnv.getFiler().createResource(
-                StandardLocation.CLASS_OUTPUT,
-                "",
-                "modernizer/annotations/modernizer-ignore-" +
-                    "annotated-classes.txt",
-                null);
-            writer = fileObject.openWriter();
+            File dir = new File(getFilePath(), "modernizer");
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            File file = new File(dir.getPath(),
+                "modernizer-ignore-annotated-classes.txt");
+            writer = new FileWriter(file);
             for (String element : annotatedClasses) {
                 writer.write(element + "\n");
             }
@@ -87,11 +88,32 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
+        }
+    }
+
+    private String getFilePath() {
+        try {
+            FileObject fileObjectToGetPath =
+                processingEnv.getFiler().createResource(
+                    StandardLocation.CLASS_OUTPUT,
+                    "",
+                    "dummy-file.txt",
+                    null);
+            String path = fileObjectToGetPath.getName();
+            fileObjectToGetPath.delete();
+            while (!path.endsWith("target")) {
+                path = path.substring(0, path.lastIndexOf("/"));
+            }
+            return path;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

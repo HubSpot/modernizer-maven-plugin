@@ -212,9 +212,13 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
+        String path = outputDirectory.toString();
+        while (!path.endsWith("target")) {
+            path = path.substring(0, path.lastIndexOf("/"));
+        }
         File ignoreClassesFile =
-            new File(outputDirectory,
-                "modernizer/annotations/modernizer-ignore-" +
+            new File(path,
+                "modernizer/modernizer-ignore-" +
                     "annotated-classes.txt");
         if (ignoreClassesFile.exists()) {
             Collection<String> ignoreClasses =
