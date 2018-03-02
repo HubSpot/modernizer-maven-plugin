@@ -42,7 +42,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.gaul.annotation_processsor.OutputPathFinder;
+import org.gaul.annotation_processsor.ModernizerAnnotationOutput;
 import org.xml.sax.SAXException;
 
 @Mojo(name = "modernizer", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
@@ -214,8 +214,8 @@ public final class ModernizerMojo extends AbstractMojo {
         }
 
         File ignoreClassesFile = new File(
-            OutputPathFinder.getOutputPath(outputDirectory),
-            "modernizer/ignore-annotated-classes.txt");
+            ModernizerAnnotationOutput.getOutputPath(outputDirectory),
+            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
         if (ignoreClassesFile.exists()) {
             Collection<String> ignoreClasses =
                 readExclusionsFile(ignoreClassesFile.toString());

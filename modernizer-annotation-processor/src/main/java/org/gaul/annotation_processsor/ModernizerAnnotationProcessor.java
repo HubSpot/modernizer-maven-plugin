@@ -84,7 +84,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         try {
             File file = new File(
                 getOutputDirectory().getPath(),
-                "ignore-annotated-classes.txt");
+                ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
             writer = new FileWriter(file);
             for (String element : annotatedClasses) {
                 writer.write(element + "\n");
@@ -113,10 +113,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     null);
             File outputDir =
                 new File(fileObjectToGetPath.getName()).getParentFile();
-            File dir = new File(
-                OutputPathFinder.getOutputPath(outputDir), "modernizer");
-            dir.mkdirs();
-            return dir;
+            return ModernizerAnnotationOutput.getOutputPath(outputDir);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

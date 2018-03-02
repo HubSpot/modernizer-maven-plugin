@@ -72,6 +72,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.gaul</groupId>
+      <artifactId>modernizer-annotation-processor</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
       <version>${asm.version}</version>
@@ -86,11 +91,6 @@
       <artifactId>spring-beans</artifactId>
       <version>4.1.6.RELEASE</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gaul</groupId>
-      <artifactId>modernizer-annotation-processor</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

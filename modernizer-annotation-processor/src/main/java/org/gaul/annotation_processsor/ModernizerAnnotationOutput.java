@@ -18,14 +18,19 @@ package org.gaul.annotation_processsor;
 
 import java.io.File;
 
-public final class OutputPathFinder {
+public final class ModernizerAnnotationOutput {
 
-    private OutputPathFinder() { }
+    public static final String IGNORE_CLASSES_FILE_NAME =
+        "ignore-annotated-classes.txt";
+
+    private ModernizerAnnotationOutput() { }
 
     public static File getOutputPath(File classOutputDir) {
         if (classOutputDir.getPath().endsWith("/target/classes") ||
             classOutputDir.getPath().endsWith("/target/test-classes")) {
-            return classOutputDir.getParentFile();
+            File dir = new File(classOutputDir.getParentFile(), "modernizer");
+            dir.mkdirs();
+            return dir;
         }
         return classOutputDir;
     }
