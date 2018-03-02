@@ -287,19 +287,19 @@ public final class ModernizerMojo extends AbstractMojo {
                 is = new FileInputStream(exclusionsFilePath);
             } else {
                 is = this.getClass().getClassLoader().getResourceAsStream(
-                    exclusionsFilePath);
+                        exclusionsFilePath);
             }
             if (is == null) {
                 throw new MojoExecutionException(
                         "Could not find exclusion file: " +
-                            exclusionsFilePath);
+                        exclusionsFilePath);
             }
 
             return Utils.readAllLines(is);
         } catch (IOException ioe) {
             throw new MojoExecutionException(
                     "Error reading exclusion file: " +
-                        exclusionsFilePath, ioe);
+                    exclusionsFilePath, ioe);
         } finally {
             Utils.closeQuietly(is);
         }
