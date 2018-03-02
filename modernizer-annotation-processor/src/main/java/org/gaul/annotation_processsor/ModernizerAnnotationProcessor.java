@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.gaul.annotation.processor;
+package org.gaul.annotation_processsor;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -77,6 +77,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private void makeAnnotatedClassesFile(List<String> annotatedClasses) {
+        if (annotatedClasses.isEmpty()) {
+            return;
+        }
         FileWriter writer = null;
         try {
             File file = new File(
@@ -108,12 +111,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     "",
                     "dummy-file.txt",
                     null);
-            String filePath = fileObjectToGetPath.getName();
-            String outputDir = filePath
-                    .substring(0, filePath.lastIndexOf("/"));
-            String path =
-                OutputPathFinder.getOutputPath(outputDir);
-            File dir = new File(path, "modernizer");
+            File outputDir =
+                new File(fileObjectToGetPath.getName()).getParentFile();
+            File dir = new File(
+                OutputPathFinder.getOutputPath(outputDir), "modernizer");
             dir.mkdirs();
             return dir;
         } catch (IOException e) {
