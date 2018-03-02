@@ -81,12 +81,12 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         if (annotatedClasses.isEmpty()) {
             return;
         }
-        Writer writer = null;
         File outputDir = getOutputDirectory();
         outputDir.mkdirs();
         File file = new File(
             outputDir,
             ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
+        Writer writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(file));
             for (String element : annotatedClasses) {
@@ -112,11 +112,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                 processingEnv.getFiler().createResource(
                     StandardLocation.CLASS_OUTPUT,
                     "",
-                    "dummy-file.txt",
-                    null);
+                    "dummy-file.txt");
             File outputDir =
                 new File(fileObjectToGetPath.getName()).getParentFile();
-            return ModernizerAnnotationOutput.getOutputPath(outputDir);
+            return ModernizerAnnotationOutput.getOutputDir(outputDir);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -130,8 +129,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             .toString()
             .replace('.', '/');
         String packagePrefix = !packageName.isEmpty() ? packageName + "/" : "";
-        final String classHeader =
-            packagePrefix + getFullClassName(classElement);
+        String classHeader = packagePrefix + getFullClassName(classElement);
         return classHeader.replace("$", "\\$") + "(\\$.+)?";
     }
 

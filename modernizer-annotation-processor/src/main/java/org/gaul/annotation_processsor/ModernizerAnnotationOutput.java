@@ -25,7 +25,7 @@ public final class ModernizerAnnotationOutput {
 
     private ModernizerAnnotationOutput() { }
 
-    public static File getOutputPath(File classOutputDir) {
+    public static File getOutputDir(File classOutputDir) {
         if (classOutputDir.getAbsolutePath().endsWith("/target/classes") ||
             classOutputDir.getAbsolutePath().endsWith("/target/test-classes")
         ) {
