@@ -12,6 +12,10 @@
   <version>1.0-hubspot-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
+  <prerequisites>
+    <maven>3.0.5</maven>
+  </prerequisites>
+
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -70,6 +74,11 @@
       <artifactId>assertj-core</artifactId>
       <version>1.7.1</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gaul</groupId>
+      <artifactId>modernizer-annotation-processor</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>

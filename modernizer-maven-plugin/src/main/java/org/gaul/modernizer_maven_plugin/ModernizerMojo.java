@@ -42,6 +42,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.gaul.annotation_processsor.ModernizerAnnotationOutput;
 import org.xml.sax.SAXException;
 
 @Mojo(name = "modernizer", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
@@ -209,6 +210,18 @@ public final class ModernizerMojo extends AbstractMojo {
             } catch (PatternSyntaxException pse) {
                 throw new MojoExecutionException(
                         "Invalid exclusion pattern", pse);
+            }
+        }
+
+        File ignoreClassesFile = new File(
+            ModernizerAnnotationOutput.getOutputDir(outputDirectory),
+            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
+        if (ignoreClassesFile.exists()) {
+            Collection<String> ignoreClasses =
+                readExclusionsFile(ignoreClassesFile.toString());
+            for (String ignoreClass : ignoreClasses) {
+                allIgnoreFullClassNamePatterns.add(
+                    Pattern.compile(ignoreClass));
             }
         }
 
