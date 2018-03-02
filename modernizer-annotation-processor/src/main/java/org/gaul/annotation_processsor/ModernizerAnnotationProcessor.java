@@ -16,9 +16,11 @@
 
 package org.gaul.annotation_processsor;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +33,6 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
@@ -80,12 +81,14 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         if (annotatedClasses.isEmpty()) {
             return;
         }
-        FileWriter writer = null;
+        Writer writer = null;
+        File outputDir = getOutputDirectory();
+        outputDir.mkdirs();
+        File file = new File(
+            outputDir,
+            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
         try {
-            File file = new File(
-                getOutputDirectory().getPath(),
-                ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
-            writer = new FileWriter(file);
+            writer = new BufferedWriter(new FileWriter(file));
             for (String element : annotatedClasses) {
                 writer.write(element + "\n");
             }
@@ -126,17 +129,15 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             .getQualifiedName()
             .toString()
             .replace('.', '/');
-        final String classHeader = (!packageName.isEmpty() ?
-                packageName + "/" : "") +
-                getFullClassName(classElement);
+        String packagePrefix = !packageName.isEmpty() ? packageName + "/" : "";
+        final String classHeader =
+            packagePrefix + getFullClassName(classElement);
         return classHeader.replace("$", "\\$") + "(\\$.+)?";
     }
 
     private String getFullClassName(Element classElement) {
         List<String> parentClasses = new ArrayList<String>();
         Element enclosingElement = classElement.getEnclosingElement();
-        processingEnv.getMessager().printMessage(Kind.NOTE,
-            enclosingElement.getSimpleName());
         while (enclosingElement != null &&
             enclosingElement.getKind().isClass()) {
             parentClasses.add(enclosingElement.getSimpleName().toString());

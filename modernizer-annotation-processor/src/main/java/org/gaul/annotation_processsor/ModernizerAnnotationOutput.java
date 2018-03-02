@@ -26,11 +26,10 @@ public final class ModernizerAnnotationOutput {
     private ModernizerAnnotationOutput() { }
 
     public static File getOutputPath(File classOutputDir) {
-        if (classOutputDir.getPath().endsWith("/target/classes") ||
-            classOutputDir.getPath().endsWith("/target/test-classes")) {
-            File dir = new File(classOutputDir.getParentFile(), "modernizer");
-            dir.mkdirs();
-            return dir;
+        if (classOutputDir.getAbsolutePath().endsWith("/target/classes") ||
+            classOutputDir.getAbsolutePath().endsWith("/target/test-classes")
+        ) {
+          return new File(classOutputDir.getParentFile(), "modernizer");
         }
         return classOutputDir;
     }
