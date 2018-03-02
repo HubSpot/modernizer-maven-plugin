@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hubspot.annotation.processor;
+package org.gaul.annotation.processor;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -31,6 +31,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
@@ -47,7 +48,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public final boolean process(
-        Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        Set<? extends TypeElement> annotations,
+        RoundEnvironment roundEnv
+    ) {
         for (TypeElement annotation : annotations) {
             List<String> annotatedClasses =
                 getAnnotatedClasses(roundEnv, annotation);
@@ -57,7 +60,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private List<String> getAnnotatedClasses(
-        RoundEnvironment roundEnv, TypeElement annotation) {
+        RoundEnvironment roundEnv,
+        TypeElement annotation
+    ) {
         List<String> annotatedClasses = new ArrayList<String>();
         for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
             List<String> warnings = Arrays.asList(
@@ -74,11 +79,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     private void makeAnnotatedClassesFile(List<String> annotatedClasses) {
         FileWriter writer = null;
         try {
-            /*File dir = new File(getFilePath(), "modernizer");
-            dir.mkdirs();
-            File file = new File(dir.getPath(),
-                "modernizer-ignore-annotated-classes.txt");*/
-            writer = new FileWriter(getFilePath());
+            File file = new File(
+                getOutputDirectory().getPath(),
+                "ignore-annotated-classes.txt");
+            writer = new FileWriter(file);
             for (String element : annotatedClasses) {
                 writer.write(element + "\n");
             }
@@ -96,7 +100,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         }
     }
 
-    private File getFilePath() {
+    private File getOutputDirectory() {
         try {
             FileObject fileObjectToGetPath =
                 processingEnv.getFiler().createResource(
@@ -104,16 +108,14 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     "",
                     "dummy-file.txt",
                     null);
-            String path = fileObjectToGetPath.getName();
-            fileObjectToGetPath.delete();
-            while (!path.endsWith("target")) {
-                path = path.substring(0, path.lastIndexOf("/"));
-            }
+            String filePath = fileObjectToGetPath.getName();
+            String outputDir = filePath
+                    .substring(0, filePath.lastIndexOf("/"));
+            String path =
+                OutputPathFinder.getOutputPath(outputDir);
             File dir = new File(path, "modernizer");
             dir.mkdirs();
-            File file = new File(dir.getPath(),
-                "modernizer-ignore-annotated-classes.txt");
-            return file;
+            return dir;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -126,20 +128,19 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             .getQualifiedName()
             .toString()
             .replace('.', '/');
-        String classHeader;
-        if (!packageName.isEmpty()) {
-            classHeader =
-                packageName + "/" + getFullClassName(classElement);
-        } else {
-            classHeader = getFullClassName(classElement);
-        }
+        final String classHeader = (!packageName.isEmpty() ?
+                packageName + "/" : "") +
+                getFullClassName(classElement);
         return classHeader.replace("$", "\\$") + "(\\$.+)?";
     }
 
     private String getFullClassName(Element classElement) {
         List<String> parentClasses = new ArrayList<String>();
         Element enclosingElement = classElement.getEnclosingElement();
-        while (enclosingElement.getKind().isClass()) {
+        processingEnv.getMessager().printMessage(Kind.NOTE,
+            enclosingElement.getSimpleName());
+        while (enclosingElement != null &&
+            enclosingElement.getKind().isClass()) {
             parentClasses.add(enclosingElement.getSimpleName().toString());
             enclosingElement = enclosingElement.getEnclosingElement();
         }
