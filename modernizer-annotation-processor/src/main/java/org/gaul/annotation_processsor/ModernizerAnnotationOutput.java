@@ -29,7 +29,7 @@ public final class ModernizerAnnotationOutput {
         if (classOutputDir.getAbsolutePath().endsWith("/target/classes") ||
             classOutputDir.getAbsolutePath().endsWith("/target/test-classes")
         ) {
-          return new File(classOutputDir.getParentFile(), "modernizer");
+            return new File(classOutputDir.getParentFile(), "modernizer");
         }
         return classOutputDir;
     }
