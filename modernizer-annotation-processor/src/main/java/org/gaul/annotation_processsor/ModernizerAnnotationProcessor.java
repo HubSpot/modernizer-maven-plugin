@@ -39,6 +39,8 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 import com.google.auto.service.AutoService;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
 
 @SupportedAnnotationTypes("java.lang.SuppressWarnings")
 @AutoService(Processor.class)
@@ -76,53 +78,12 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             if (warnings.contains("modernizer")) {
                 if (element.getKind().isClass()) {
                     annotatedClasses.add(getClassHeader(element));
-                } else if (element.getKind().toString().equals("METHOD")) {
+                } else if (element.getKind().toString().equals("METHOD") ||
+                    element.getKind().toString().equals("CONSTRUCTOR")) {
                     annotatedMethods.add(getMethod(element));
                 }
             }
         }
-    }
-
-    private String getMethod(Element element) {
-        ExecutableType emeth = (ExecutableType) element.asType();
-        List<? extends TypeMirror> methodParams = emeth.getParameterTypes();
-        String methodSignature = getMethodSignature(methodParams);
-        String fullClassPattern =
-            getClassHeader(element.getEnclosingElement());
-        String fullClassName =
-            fullClassPattern.substring(0, fullClassPattern.indexOf('('));
-        String methodName = element.getSimpleName().toString();
-        return fullClassName + "," + methodName + "," + methodSignature;
-    }
-
-    private String getMethodSignature(List<? extends TypeMirror> methodParams) {
-        if (methodParams.isEmpty()) {
-            return "";
-        }
-        String methodSignature = "";
-        for (TypeMirror param : methodParams) {
-            String paramString = param.toString();
-            if (paramString.equals("int")) {
-                methodSignature += "I";
-            } else if (paramString.equals("boolean")) {
-                methodSignature += "Z";
-            } else if (paramString.equals("byte")) {
-                methodSignature += "B";
-            } else if (paramString.equals("char")) {
-                methodSignature += "C";
-            } else if (paramString.equals("short")) {
-                methodSignature += "S";
-            } else if (paramString.equals("long")) {
-                methodSignature += "J";
-            } else if (paramString.equals("float")) {
-                methodSignature += "F";
-            } else if (paramString.equals("double")) {
-                methodSignature += "D";
-            } else {
-                methodSignature += "L" + paramString.replace('.', '/') + ";";
-            }
-        }
-        return methodSignature;
     }
 
     private void makeAnnotatedElementsFiles(
@@ -237,5 +198,64 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             className.append("$");
         }
         return className.toString() + classElement.getSimpleName();
+    }
+
+    private String getMethod(Element element) {
+        ExecutableType emeth = (ExecutableType) element.asType();
+        List<? extends TypeMirror> methodParams = emeth.getParameterTypes();
+        String methodSignature = getMethodSignature(methodParams);
+        String fullClassPattern =
+            getClassHeader(element.getEnclosingElement());
+        String fullClassName =
+            fullClassPattern.substring(0, fullClassPattern.indexOf('('));
+        String methodName = element.getSimpleName().toString();
+        return fullClassName + "," + methodName + "," + methodSignature;
+    }
+
+    private String getMethodSignature(List<? extends TypeMirror> methodParams) {
+        if (methodParams.isEmpty()) {
+            return "";
+        }
+        String methodSignature = "";
+        for (TypeMirror param : methodParams) {
+            if (param.getKind().name().equals("TYPEVAR")) {
+                methodSignature += "Ljava/lang/Object;";
+                continue;
+            }
+            String paramString = param.toString();
+            if (paramString.indexOf('[') == -1) {
+                methodSignature += getParameterType(paramString);
+            } else {
+                int count = CharMatcher.is('[').countIn(paramString);
+                String array = Strings.repeat("[", count);
+                String arrayType =
+                    getParameterType(
+                        paramString.substring(0, paramString.indexOf('[')));
+                methodSignature += array + arrayType;
+            }
+        }
+        return methodSignature;
+    }
+
+    private String getParameterType(String paramString) {
+        if (paramString.equals("int")) {
+            return "I";
+        } else if (paramString.equals("boolean")) {
+            return "Z";
+        } else if (paramString.equals("byte")) {
+            return "B";
+        } else if (paramString.equals("char")) {
+            return "C";
+        } else if (paramString.equals("short")) {
+            return "S";
+        } else if (paramString.equals("long")) {
+            return "J";
+        } else if (paramString.equals("float")) {
+            return "F";
+        } else if (paramString.equals("double")) {
+            return "D";
+        } else {
+            return "L" + paramString.replace('.', '/') + ";";
+        }
     }
 }
