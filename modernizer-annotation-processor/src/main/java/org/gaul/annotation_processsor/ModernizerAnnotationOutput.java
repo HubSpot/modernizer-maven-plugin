@@ -22,6 +22,8 @@ public final class ModernizerAnnotationOutput {
 
     public static final String IGNORE_CLASSES_FILE_NAME =
         "ignore-annotated-classes.txt";
+    public static final String IGNORE_METHODS_FILE_NAME =
+        "ignore-annotated-methods.txt";
 
     private ModernizerAnnotationOutput() { }
 

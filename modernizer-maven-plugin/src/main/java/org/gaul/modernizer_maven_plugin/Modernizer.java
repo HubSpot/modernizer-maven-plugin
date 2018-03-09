@@ -49,12 +49,14 @@ final class Modernizer {
     private final Collection<Pattern> exclusionPatterns;
     private final Collection<String> ignorePackages;
     private final Collection<Pattern> ignoreFullClassNamePatterns;
+    private final Collection<String> ignoreMethods;
 
     Modernizer(String javaVersion, Map<String, Violation> violations,
             Collection<String> exclusions,
             Collection<Pattern> exclusionPatterns,
             Collection<String> ignorePackages,
-            Collection<Pattern> ignoreClassNamePatterns) {
+            Collection<Pattern> ignoreClassNamePatterns,
+            Collection<String> ignoreMethods) {
         long version;
         if (javaVersion.startsWith("1.")) {
             version = Long.parseLong(javaVersion.substring(2));
@@ -69,13 +71,14 @@ final class Modernizer {
         this.ignorePackages = Utils.createImmutableSet(ignorePackages);
         this.ignoreFullClassNamePatterns
             = Utils.createImmutableSet(ignoreClassNamePatterns);
+        this.ignoreMethods = Utils.createImmutableSet(ignoreMethods);
     }
 
     Collection<ViolationOccurrence> check(ClassReader classReader)
             throws IOException {
         ModernizerClassVisitor classVisitor = new ModernizerClassVisitor(
                 javaVersion, violations, exclusions, exclusionPatterns,
-                ignorePackages, ignoreFullClassNamePatterns);
+                ignorePackages, ignoreFullClassNamePatterns, ignoreMethods);
         classReader.accept(classVisitor, 0);
         return classVisitor.getOccurrences();
     }
@@ -130,12 +133,14 @@ final class ModernizerClassVisitor extends ClassVisitor {
             new ArrayList<ViolationOccurrence>();
     private String packageName;
     private String className;
+    private final Collection<String> ignoreMethods;
 
     ModernizerClassVisitor(long javaVersion,
             Map<String, Violation> violations, Collection<String> exclusions,
             Collection<Pattern> exclusionPatterns,
             Collection<String> ignorePackages,
-            Collection<Pattern> ignoreFullClassNamePatterns) {
+            Collection<Pattern> ignoreFullClassNamePatterns,
+            Collection<String> ignoreMethods) {
         super(Opcodes.ASM5);
         Utils.checkArgument(javaVersion >= 0);
         this.javaVersion = javaVersion;
@@ -145,6 +150,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
         this.ignorePackages = Utils.checkNotNull(ignorePackages);
         this.ignoreFullClassNamePatterns =
                 Utils.checkNotNull(ignoreFullClassNamePatterns);
+        this.ignoreMethods = Utils.createImmutableSet(ignoreMethods);
     }
 
     @Override
@@ -170,6 +176,9 @@ final class ModernizerClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, final String methodName,
             final String methodDescriptor, final String methodSignature,
             String[] exceptions) {
+        if (ignoreMethod(methodName, methodDescriptor)) {
+            return null;
+        }
         MethodVisitor base = super.visitMethod(access, methodName,
                 methodDescriptor, methodSignature, exceptions);
         MethodVisitor origVisitor = new MethodVisitor(Opcodes.ASM5, base) {
@@ -199,7 +208,6 @@ final class ModernizerClassVisitor extends ClassVisitor {
                 String name = Type.getType(desc).getInternalName();
                 Violation violation = violations.get(name);
                 checkToken(name, violation, name, lineNumber);
-
                 return super.visitAnnotation(desc, visible);
             }
 
@@ -245,6 +253,26 @@ final class ModernizerClassVisitor extends ClassVisitor {
         for (Pattern pattern : ignoreFullClassNamePatterns) {
             if (pattern.matcher(className).matches()) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean ignoreMethod(String methodName, String descriptor) {
+        for (String method : ignoreMethods) {
+            String[] methodParts = method.split(",");
+            String methodSignature =
+                descriptor.substring(descriptor.indexOf('(') + 1,
+                    descriptor.indexOf(')'));
+            if (Pattern.compile(methodParts[0]).matcher(className).matches() &&
+                methodName.equals(methodParts[1])) {
+                if (methodParts.length == 2 && methodSignature.isEmpty()) {
+                    return true;
+                }
+                if (methodParts.length == 3 &&
+                    methodParts[2].equals(methodSignature)) {
+                    return true;
+                }
             }
         }
         return false;

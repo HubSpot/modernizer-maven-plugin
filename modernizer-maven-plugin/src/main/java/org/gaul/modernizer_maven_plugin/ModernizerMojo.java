@@ -225,9 +225,21 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
+        Set<String> allIgnoreMethodNames = new HashSet<String>();
+        File ignoreMethodsFile = new File(
+            ModernizerAnnotationOutput.getOutputDir(outputDirectory),
+            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME);
+        if (ignoreMethodsFile.exists()) {
+            Collection<String> ignoreMethods =
+                readExclusionsFile(ignoreMethodsFile.toString());
+            for (String ignoreMethod : ignoreMethods) {
+                allIgnoreMethodNames.add(ignoreMethod);
+            }
+        }
+
         modernizer = new Modernizer(javaVersion, allViolations, allExclusions,
                 allExclusionPatterns, ignorePackages,
-                allIgnoreFullClassNamePatterns);
+                allIgnoreFullClassNamePatterns, allIgnoreMethodNames);
 
         try {
             long count = recurseFiles(outputDirectory);

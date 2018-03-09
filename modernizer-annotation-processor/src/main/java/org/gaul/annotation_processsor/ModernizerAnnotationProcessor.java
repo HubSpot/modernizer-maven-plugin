@@ -33,6 +33,8 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
@@ -53,36 +55,97 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         RoundEnvironment roundEnv
     ) {
         for (TypeElement annotation : annotations) {
-            List<String> annotatedClasses =
-                getAnnotatedClasses(roundEnv, annotation);
-            makeAnnotatedClassesFile(annotatedClasses);
+            List<String> annotatedClasses = new ArrayList<String>();
+            List<String> annotatedMethods = new ArrayList<String>();
+            getAnnotatedElements(roundEnv, annotation,
+                annotatedClasses, annotatedMethods);
+            makeAnnotatedElementsFiles(annotatedClasses, annotatedMethods);
         }
         return true;
     }
 
-    private List<String> getAnnotatedClasses(
+    private void getAnnotatedElements(
         RoundEnvironment roundEnv,
-        TypeElement annotation
+        TypeElement annotation,
+        List<String> annotatedClasses,
+        List<String> annotatedMethods
     ) {
-        List<String> annotatedClasses = new ArrayList<String>();
         for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
             List<String> warnings = Arrays.asList(
                     element.getAnnotation(SuppressWarnings.class).value());
             if (warnings.contains("modernizer")) {
                 if (element.getKind().isClass()) {
                     annotatedClasses.add(getClassHeader(element));
+                } else if (element.getKind().toString().equals("METHOD")) {
+                    annotatedMethods.add(getMethod(element));
                 }
             }
         }
-        return annotatedClasses;
     }
 
-    private void makeAnnotatedClassesFile(List<String> annotatedClasses) {
-        if (annotatedClasses.isEmpty()) {
+    private String getMethod(Element element) {
+        ExecutableType emeth = (ExecutableType) element.asType();
+        List<? extends TypeMirror> methodParams = emeth.getParameterTypes();
+        String methodSignature = getMethodSignature(methodParams);
+        String fullClassPattern =
+            getClassHeader(element.getEnclosingElement());
+        String fullClassName =
+            fullClassPattern.substring(0, fullClassPattern.indexOf('('));
+        String methodName = element.getSimpleName().toString();
+        return fullClassName + "," + methodName + "," + methodSignature;
+    }
+
+    private String getMethodSignature(List<? extends TypeMirror> methodParams) {
+        if (methodParams.isEmpty()) {
+            return "";
+        }
+        String methodSignature = "";
+        for (TypeMirror param : methodParams) {
+            String paramString = param.toString();
+            if (paramString.equals("int")) {
+                methodSignature += "I";
+            } else if (paramString.equals("boolean")) {
+                methodSignature += "Z";
+            } else if (paramString.equals("byte")) {
+                methodSignature += "B";
+            } else if (paramString.equals("char")) {
+                methodSignature += "C";
+            } else if (paramString.equals("short")) {
+                methodSignature += "S";
+            } else if (paramString.equals("long")) {
+                methodSignature += "J";
+            } else if (paramString.equals("float")) {
+                methodSignature += "F";
+            } else if (paramString.equals("double")) {
+                methodSignature += "D";
+            } else {
+                methodSignature += "L" + paramString.replace('.', '/') + ";";
+            }
+        }
+        return methodSignature;
+    }
+
+    private void makeAnnotatedElementsFiles(
+        List<String> annotatedClasses,
+        List<String> annotatedMethods
+    ) {
+        if (annotatedClasses.isEmpty() && annotatedMethods.isEmpty()) {
             return;
         }
         File outputDir = getOutputDirectory();
         outputDir.mkdirs();
+        if (!annotatedClasses.isEmpty()) {
+            makeAnnotatedClassesFile(outputDir, annotatedClasses);
+        }
+        if (!annotatedMethods.isEmpty()) {
+            makeAnnotatedMethodsFile(outputDir, annotatedMethods);
+        }
+    }
+
+    private void makeAnnotatedClassesFile(
+        File outputDir,
+        List<String> annotatedClasses
+    ) {
         File file = new File(
             outputDir,
             ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
@@ -90,6 +153,33 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         try {
             writer = new BufferedWriter(new FileWriter(file));
             for (String element : annotatedClasses) {
+                writer.write(element + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void makeAnnotatedMethodsFile(
+        File outputDir,
+        List<String> annotatedMethods
+    ) {
+        File file = new File(
+            outputDir,
+            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME);
+        Writer writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(file));
+            for (String element : annotatedMethods) {
                 writer.write(element + "\n");
             }
             writer.close();
