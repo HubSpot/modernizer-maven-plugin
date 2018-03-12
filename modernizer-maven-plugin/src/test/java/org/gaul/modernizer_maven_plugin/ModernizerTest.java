@@ -30,8 +30,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.Vector;
 import java.util.regex.Pattern;
@@ -381,6 +384,82 @@ public final class ModernizerTest {
         assertThat(actualViolations).containsAll(violations.values());
     }
 
+    @Test
+    public void testIgnoreMethod() throws Exception {
+        ClassReader cr = new ClassReader(IgnoreMethodTestClass.class.getName());
+        Collection<String> ignoreMethodNames = new HashSet<String>();
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass,testMethodEmptyParameters,");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testMethodMultiplePrimitiveTypeParameters,IC");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "<init>,");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testMethodMultipleGenericTypeParameters," +
+                "Ljava/util/List;" +
+                "Ljava/util/Set;");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testMethodDeclaredTypeParameter," +
+                "Lorg/gaul/modernizer_maven_plugin/ModernizerTest" +
+                "\\$StringGetBytesString;");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testMethodPrimitiveAndGenericTypeParameters," +
+                "Ljava/util/List;Z");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testOverloadedMethod,");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testMethodAllPrimitiveTypeParameters,IZBCSJFD");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodTestClass," +
+                "testArrayParameters," +
+                "[I[Ljava/lang/String;[[F[Ljava/util/List;");
+        Collection<ViolationOccurrence> occurences = new Modernizer(
+            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
+            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodNames)
+            .check(cr);
+        assertThat(occurences).hasSize(2);
+    }
+
+    @Test
+    public void testIgnoreMethodGenericClass() throws Exception {
+        ClassReader cr =
+            new ClassReader(IgnoreMethodGenericTestClass.class.getName());
+        Collection<String> ignoreMethodNames = new HashSet<String>();
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodGenericTestClass," +
+                "<init>,");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodGenericTestClass," +
+                "testGenericMethod,Ljava/lang/Object;");
+        ignoreMethodNames.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest\\" +
+                "$IgnoreMethodGenericTestClass," +
+                "testGenericOverloadedMethod,I");
+        Collection<ViolationOccurrence> occurences = new Modernizer(
+            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
+            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodNames)
+            .check(cr);
+        assertThat(occurences).hasSize(2);
+    }
+
     /** Helper to create Modernizer object with default parameters. */
     private Modernizer createModernizer(String javaVersion) {
         return new Modernizer(javaVersion, violations, NO_EXCLUSIONS,
@@ -641,5 +720,97 @@ public final class ModernizerTest {
     }
 
     private enum EnumClass {
+    }
+
+    private static class IgnoreMethodTestClass {
+        IgnoreMethodTestClass() throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        IgnoreMethodTestClass(StringGetBytesString string) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testMethodEmptyParameters() throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testMethodMultiplePrimitiveTypeParameters(
+            int integerVar,
+            char characterVar
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testMethodAllPrimitiveTypeParameters(
+            int intVar, boolean boolVar, byte byteVar, char charVar,
+            short shortVar, long longVar, float floatVar, double doubleVar
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testMethodMultipleGenericTypeParameters(
+            List<String> stringList, Set<Integer> integerSet
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testMethodDeclaredTypeParameter(
+            StringGetBytesString obj
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testMethodPrimitiveAndGenericTypeParameters(
+            List<String> list, boolean bool
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testOverloadedMethod() throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        private static void testOverloadedMethod(
+            String string
+        ) throws Exception {
+            string.getBytes("UTF-8");
+        }
+
+        private static void testArrayParameters(
+            int[] array,
+            String[] stringArray,
+            float[][] arrayOfArrays,
+            List<String> [] listOfArrayOfStrings
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+    }
+
+    private static class IgnoreMethodGenericTestClass<E> {
+        IgnoreMethodGenericTestClass() throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        IgnoreMethodGenericTestClass(
+            IgnoreMethodTestClass ignore
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        public void testGenericMethod(E obj) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        public void testGenericOverloadedMethod(
+            E firstObj,
+            E secondObj
+        ) throws Exception {
+            "".getBytes("UTF-8");
+        }
+
+        public void testGenericOverloadedMethod(int var) throws Exception {
+            "".getBytes("UTF-8");
+        }
     }
 }
