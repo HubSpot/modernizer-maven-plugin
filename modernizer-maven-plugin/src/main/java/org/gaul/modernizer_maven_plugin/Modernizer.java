@@ -270,7 +270,8 @@ final class ModernizerClassVisitor extends ClassVisitor {
                     return true;
                 }
                 if (methodParts.length == 3 &&
-                    methodParts[2].equals(methodSignature)) {
+                    methodParts[2].replace("\\$", "$")
+                        .equals(methodSignature)) {
                     return true;
                 }
             }

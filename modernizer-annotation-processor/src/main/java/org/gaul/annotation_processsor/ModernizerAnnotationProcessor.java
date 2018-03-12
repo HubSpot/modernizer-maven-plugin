@@ -203,11 +203,19 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     private String getMethod(Element element) {
         ExecutableType emeth = (ExecutableType) element.asType();
         List<? extends TypeMirror> methodParams = emeth.getParameterTypes();
-        String methodSignature = getMethodSignature(methodParams);
         String fullClassPattern =
             getClassHeader(element.getEnclosingElement());
         String fullClassName =
             fullClassPattern.substring(0, fullClassPattern.indexOf('('));
+        String methodSignature = "";
+        if (element.getKind().toString().equals("CONSTRUCTOR")) {
+            int index = fullClassName.lastIndexOf("\\$");
+            if (index != -1) {
+                methodSignature +=
+                    "L" + fullClassName.substring(0, index) + ";";
+            }
+        }
+        methodSignature += getMethodSignature(methodParams);
         String methodName = element.getSimpleName().toString();
         return fullClassName + "," + methodName + "," + methodSignature;
     }
