@@ -217,7 +217,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         }
         methodSignature += getMethodSignature(methodParams);
         String methodName = element.getSimpleName().toString();
-        return fullClassName + "," + methodName + "," + methodSignature;
+        return fullClassName + "," +
+            methodName + "," +
+            methodSignature.replace("\\$", "$");
     }
 
     private String getMethodSignature(List<? extends TypeMirror> methodParams) {

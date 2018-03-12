@@ -225,15 +225,15 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
-        File ignoreClassesTestFile = new File(
+        File ignoreTestClassesFile = new File(
             ModernizerAnnotationOutput.getOutputDir(testOutputDirectory),
             ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
-        if (ignoreClassesTestFile.exists()) {
-            Collection<String> ignoreClasses =
-                readExclusionsFile(ignoreClassesTestFile.toString());
-            for (String ignoreClass : ignoreClasses) {
+        if (ignoreTestClassesFile.exists()) {
+            Collection<String> ignoreTestClasses =
+                readExclusionsFile(ignoreTestClassesFile.toString());
+            for (String ignoreTestClass : ignoreTestClasses) {
                 allIgnoreFullClassNamePatterns.add(
-                    Pattern.compile(ignoreClass));
+                    Pattern.compile(ignoreTestClass));
             }
         }
 
@@ -249,14 +249,14 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
-        File ignoreMethodsTestFile = new File(
+        File ignoreTestMethodsFile = new File(
             ModernizerAnnotationOutput.getOutputDir(testOutputDirectory),
             ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME);
-        if (ignoreMethodsTestFile.exists()) {
-            Collection<String> ignoreMethods =
-                readExclusionsFile(ignoreMethodsTestFile.toString());
-            for (String ignoreMethod : ignoreMethods) {
-                allIgnoreMethodNames.add(ignoreMethod);
+        if (ignoreTestMethodsFile.exists()) {
+            Collection<String> ignoreTestMethods =
+                readExclusionsFile(ignoreTestMethodsFile.toString());
+            for (String ignoreTestMethod : ignoreTestMethods) {
+                allIgnoreMethodNames.add(ignoreTestMethod);
             }
         }
 

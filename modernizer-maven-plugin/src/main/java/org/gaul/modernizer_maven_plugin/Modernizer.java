@@ -208,6 +208,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
                 String name = Type.getType(desc).getInternalName();
                 Violation violation = violations.get(name);
                 checkToken(name, violation, name, lineNumber);
+
                 return super.visitAnnotation(desc, visible);
             }
 
@@ -258,20 +259,23 @@ final class ModernizerClassVisitor extends ClassVisitor {
         return false;
     }
 
-    private boolean ignoreMethod(String methodName, String descriptor) {
-        for (String method : ignoreMethods) {
-            String[] methodParts = method.split(",");
+    private boolean ignoreMethod(String methodName, String methodDescriptor) {
+        for (String ignoreMethod : ignoreMethods) {
+            String[] ignoreMethodParts = ignoreMethod.split(",");
             String methodSignature =
-                descriptor.substring(descriptor.indexOf('(') + 1,
-                    descriptor.indexOf(')'));
-            if (Pattern.compile(methodParts[0]).matcher(className).matches() &&
-                methodName.equals(methodParts[1])) {
-                if (methodParts.length == 2 && methodSignature.isEmpty()) {
+                methodDescriptor.substring(
+                    methodDescriptor.indexOf('(') + 1,
+                    methodDescriptor.indexOf(')')
+                );
+            if ((Pattern.compile(ignoreMethodParts[0])
+                .matcher(className).matches()) &&
+                methodName.equals(ignoreMethodParts[1])) {
+                if (ignoreMethodParts.length == 2 &&
+                    methodSignature.isEmpty()) {
                     return true;
                 }
-                if (methodParts.length == 3 &&
-                    methodParts[2].replace("\\$", "$")
-                        .equals(methodSignature)) {
+                if (ignoreMethodParts.length == 3 &&
+                    ignoreMethodParts[2].equals(methodSignature)) {
                     return true;
                 }
             }
