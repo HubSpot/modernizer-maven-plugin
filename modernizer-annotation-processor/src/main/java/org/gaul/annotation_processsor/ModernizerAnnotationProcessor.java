@@ -59,8 +59,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         for (TypeElement annotation : annotations) {
             List<String> annotatedClasses = new ArrayList<String>();
             List<String> annotatedMethods = new ArrayList<String>();
-            getAnnotatedElements(roundEnv, annotation,
-                annotatedClasses, annotatedMethods);
+            getAnnotatedElements(
+                roundEnv, annotation, annotatedClasses, annotatedMethods);
             makeAnnotatedElementsFiles(annotatedClasses, annotatedMethods);
         }
         return true;
@@ -80,7 +80,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     annotatedClasses.add(getClassHeader(element));
                 } else if (element.getKind().toString().equals("METHOD") ||
                     element.getKind().toString().equals("CONSTRUCTOR")) {
-                    annotatedMethods.add(getMethod(element));
+                    annotatedMethods.add(getMethodIdentifierString(element));
                 }
             }
         }
@@ -200,15 +200,15 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         return className.toString() + classElement.getSimpleName();
     }
 
-    private String getMethod(Element element) {
-        ExecutableType emeth = (ExecutableType) element.asType();
-        List<? extends TypeMirror> methodParams = emeth.getParameterTypes();
+    private String getMethodIdentifierString(Element methodElement) {
+        List<? extends TypeMirror> methodParams =
+            ((ExecutableType) methodElement.asType()).getParameterTypes();
         String fullClassPattern =
-            getClassHeader(element.getEnclosingElement());
+            getClassHeader(methodElement.getEnclosingElement());
         String fullClassName =
             fullClassPattern.substring(0, fullClassPattern.indexOf('('));
         String methodSignature = "";
-        if (element.getKind().toString().equals("CONSTRUCTOR")) {
+        if (methodElement.getKind().toString().equals("CONSTRUCTOR")) {
             int index = fullClassName.lastIndexOf("\\$");
             if (index != -1) {
                 methodSignature +=
@@ -216,9 +216,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             }
         }
         methodSignature += getMethodSignature(methodParams);
-        String methodName = element.getSimpleName().toString();
         return fullClassName + "," +
-            methodName + "," +
+            methodElement.getSimpleName().toString() + "," +
             methodSignature.replace("\\$", "$");
     }
 
@@ -237,11 +236,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                 methodSignature += getParameterType(paramString);
             } else {
                 int count = CharMatcher.is('[').countIn(paramString);
-                String array = Strings.repeat("[", count);
-                String arrayType =
-                    getParameterType(
-                        paramString.substring(0, paramString.indexOf('[')));
-                methodSignature += array + arrayType;
+                String arrayString = Strings.repeat("[", count);
+                String arrayType = getParameterType(
+                    paramString.substring(0, paramString.indexOf('[')));
+                methodSignature += arrayString + arrayType;
             }
         }
         return methodSignature;
