@@ -18,9 +18,11 @@ package org.gaul;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -38,6 +40,10 @@ import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.xml.sax.SAXException;
 
 @State(Scope.Benchmark)
@@ -61,12 +67,46 @@ public class BenchmarkTest {
     @Setup
     public final void setup()
         throws ParserConfigurationException, SAXException, IOException {
-        cr = new ClassReader(IgnoreMethodTestClass.class.getName());
-        ignoreMethodNames = new HashSet<String>();
-        ignoreMethodNames.add(
-            "org/gaul/BenchmarkTest" +
-                "\\$IgnoreMethodTestClass," +
-                "testMethodMultiplePrimitiveTypeParameters,IC");
+        cr = new ClassReader(TestClass.class.getName());
+        ignoreMethodNames = Arrays.asList(
+            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
+                "\\$TestClass," +
+                "<init>," +
+                "Lorg/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest;",
+            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
+                "\\$TestGenericClass," +
+                "<init>," +
+                "Lorg/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest;",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest\\$TestGenericClass," +
+                "testGenericMethod," +
+                "Ljava/lang/Object;",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest," +
+                "testMethodEmptyParameters,",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest," +
+                "testMethodPrimitiveTypeParameters," +
+                "IZBCSJFD",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest," +
+                "testMethodDeclaredTypeParameter," +
+                "Lorg/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest/TestClass;",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest," +
+                "testMethodPrimitiveAndGenericTypeParameters," +
+                "Ljava/util/List;F",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest," +
+                "testOverloadedMethod,",
+            "org/gaul/annotation_processor/" +
+                "ModernizerAnnotationProcessorTest," +
+                "testArrayParameters," +
+                "[Ljava/lang/String;[[I[Ljava/util/List;"
+        );
         InputStream is =
             Modernizer.class.getResourceAsStream("/modernizer.xml");
         try {
@@ -84,40 +124,28 @@ public class BenchmarkTest {
                 NO_EXCLUSION_PATTERNS, ignoreMethodNames);
     }
 
-    public static class IgnoreMethodTestClass {
-        public final void testMethodMultiplePrimitiveTypeParameters(
-            int integerVar,
-            char characterVar
-        ) throws Exception {
-            int counter = 0;
-            String string = "";
-            while (counter <= 100) {
-                string += "a";
-            }
-            string.getBytes("UTF-8");
-            string.getBytes("UTF-8");
-            string.getBytes("UTF-8");
-            string.getBytes("UTF-8");
-        }
-    }
-
-    @GenerateMicroBenchmark @BenchmarkMode(Mode.All)
+    @GenerateMicroBenchmark
     public final int testIgnoreMethodIfViolationFound() throws IOException {
         occurences = modernizer.check(cr);
         return occurences.size();
     }
 
-    @GenerateMicroBenchmark @BenchmarkMode(Mode.All)
+    @GenerateMicroBenchmark
     public final int testIgnoreMethodAlways() throws IOException {
         occurences = modernizerNew.check(cr);
         return occurences.size();
     }
 
-    public static void main(String[] args)
-        throws IOException, SAXException, ParserConfigurationException {
-        BenchmarkTest benchmark = new BenchmarkTest();
-        benchmark.setup();
-        System.out.println(benchmark.testIgnoreMethodIfViolationFound());
-        System.out.println(benchmark.testIgnoreMethodAlways());
+    public static void main(String... args) throws RunnerException {
+        Options opts = new OptionsBuilder()
+            .include(".*")
+            .warmupIterations(5)
+            .measurementIterations(10)
+            .jvmArgs("-Xms2g", "-Xmx2g")
+            .shouldDoGC(true)
+            .forks(1)
+            .build();
+
+        new Runner(opts).run();
     }
 }
