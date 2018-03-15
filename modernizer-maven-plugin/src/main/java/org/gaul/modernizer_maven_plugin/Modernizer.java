@@ -168,7 +168,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
         }
         for (String itr : interfaces) {
             Violation violation = violations.get(itr);
-            checkToken(itr, violation, name, /*lineNumber=*/ -1);
+            checkToken(itr, violation, name, /*lineNumber=*/ -1, "", "");
         }
     }
 
@@ -176,9 +176,6 @@ final class ModernizerClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, final String methodName,
             final String methodDescriptor, final String methodSignature,
             String[] exceptions) {
-        if (ignoreMethod(methodName, methodDescriptor)) {
-            return null;
-        }
         MethodVisitor base = super.visitMethod(access, methodName,
                 methodDescriptor, methodSignature, exceptions);
         MethodVisitor origVisitor = new MethodVisitor(Opcodes.ASM5, base) {
@@ -207,7 +204,8 @@ final class ModernizerClassVisitor extends ClassVisitor {
                     boolean visible) {
                 String name = Type.getType(desc).getInternalName();
                 Violation violation = violations.get(name);
-                checkToken(name, violation, name, lineNumber);
+                checkToken(name, violation, name, lineNumber,
+                    methodName, methodDescriptor);
 
                 return super.visitAnnotation(desc, visible);
             }
@@ -216,7 +214,8 @@ final class ModernizerClassVisitor extends ClassVisitor {
                     String desc) {
                 String token = owner + "." + name + ":" + desc;
                 Violation violation = violations.get(token);
-                checkToken(token, violation, name, lineNumber);
+                checkToken(token, violation, name, lineNumber,
+                    methodName, methodDescriptor);
             }
 
             @Override
@@ -228,11 +227,14 @@ final class ModernizerClassVisitor extends ClassVisitor {
     }
 
     private void checkToken(String token, Violation violation, String name,
-            int lineNumber) {
+            int lineNumber, String methodName, String methodDescriptor) {
         if (violation != null && !exclusions.contains(token) &&
                 javaVersion >= violation.getVersion() &&
                 !ignorePackages.contains(packageName)) {
             if (ignoreClass()) {
+                return;
+            }
+            if (ignoreMethod(methodName, methodDescriptor)) {
                 return;
             }
             for (Pattern pattern : exclusionPatterns) {
@@ -260,6 +262,9 @@ final class ModernizerClassVisitor extends ClassVisitor {
     }
 
     private boolean ignoreMethod(String methodName, String methodDescriptor) {
+        if (methodName.isEmpty() && methodDescriptor.isEmpty()) {
+            return false;
+        }
         for (String ignoreMethod : ignoreMethods) {
             String[] ignoreMethodParts = ignoreMethod.split(",");
             String methodSignature =
