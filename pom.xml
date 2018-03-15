@@ -41,6 +41,7 @@
     <module>modernizer-maven-plugin</module>
     <module>modernizer-maven-policy</module>
     <module>modernizer-annotation-processor</module>
+    <module>first-benchmark</module>
   </modules>
 
   <profiles>

@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.gaul.modernizer_maven_plugin.Modernizer;
+import org.gaul.modernizer_maven_plugin.ModernizerNew;
 import org.gaul.modernizer_maven_plugin.Utils;
 import org.gaul.modernizer_maven_plugin.Violation;
 import org.gaul.modernizer_maven_plugin.ViolationOccurrence;
@@ -55,6 +56,7 @@ public class BenchmarkTest {
     private Collection<String> ignoreMethodNames;
     private Collection<ViolationOccurrence> occurences;
     private Modernizer modernizer;
+    private ModernizerNew modernizerNew;
 
     @Setup
     public final void setup()
@@ -74,6 +76,10 @@ public class BenchmarkTest {
         }
         modernizer =
             new Modernizer("1.6", violations, NO_EXCLUSIONS,
+                NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
+                NO_EXCLUSION_PATTERNS, ignoreMethodNames);
+        modernizerNew =
+            new ModernizerNew("1.6", violations, NO_EXCLUSIONS,
                 NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
                 NO_EXCLUSION_PATTERNS, ignoreMethodNames);
     }
@@ -96,8 +102,14 @@ public class BenchmarkTest {
     }
 
     @GenerateMicroBenchmark @BenchmarkMode(Mode.All)
-    public final int testMethod() throws IOException {
+    public final int testIgnoreMethodIfViolationFound() throws IOException {
         occurences = modernizer.check(cr);
+        return occurences.size();
+    }
+
+    @GenerateMicroBenchmark @BenchmarkMode(Mode.All)
+    public final int testIgnoreMethodAlways() throws IOException {
+        occurences = modernizerNew.check(cr);
         return occurences.size();
     }
 
@@ -105,6 +117,7 @@ public class BenchmarkTest {
         throws IOException, SAXException, ParserConfigurationException {
         BenchmarkTest benchmark = new BenchmarkTest();
         benchmark.setup();
-        System.out.println(benchmark.testMethod());
+        System.out.println(benchmark.testIgnoreMethodIfViolationFound());
+        System.out.println(benchmark.testIgnoreMethodAlways());
     }
 }

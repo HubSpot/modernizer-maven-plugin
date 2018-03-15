@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-final class Utils {
+public final class Utils {
     static final Charset UTF_8 = Charset.forName("UTF-8");
 
     static <T> T checkNotNull(T reference) {
@@ -60,7 +60,7 @@ final class Utils {
                 Utils.checkNotNull(map)));
     }
 
-    static void closeQuietly(Closeable closeable) {
+    public static void closeQuietly(Closeable closeable) {
         if (closeable == null) {
             return;
         }
