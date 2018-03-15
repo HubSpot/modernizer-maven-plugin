@@ -32,9 +32,14 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
@@ -57,33 +62,36 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         RoundEnvironment roundEnv
     ) {
         for (TypeElement annotation : annotations) {
-            List<String> annotatedClasses = new ArrayList<String>();
-            List<String> annotatedMethods = new ArrayList<String>();
-            getAnnotatedElements(
-                roundEnv, annotation, annotatedClasses, annotatedMethods);
-            makeAnnotatedElementsFiles(annotatedClasses, annotatedMethods);
+            List<List<String>> annotatedElements =
+                getAnnotatedElements(roundEnv, annotation);
+            makeAnnotatedElementsFiles(
+                annotatedElements.get(0), annotatedElements.get(1));
         }
         return true;
     }
 
-    private void getAnnotatedElements(
+    private List<List<String>> getAnnotatedElements(
         RoundEnvironment roundEnv,
-        TypeElement annotation,
-        List<String> annotatedClasses,
-        List<String> annotatedMethods
+        TypeElement annotation
     ) {
+        List<String> annotatedClasses = new ArrayList<String>();
+        List<String> annotatedMethods = new ArrayList<String>();
+        List<List<String>> annotatedElements = new ArrayList<List<String>>();
         for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
             List<String> warnings = Arrays.asList(
                     element.getAnnotation(SuppressWarnings.class).value());
             if (warnings.contains("modernizer")) {
                 if (element.getKind().isClass()) {
                     annotatedClasses.add(getClassHeader(element));
-                } else if (element.getKind().toString().equals("METHOD") ||
-                    element.getKind().toString().equals("CONSTRUCTOR")) {
+                } else if (element.getKind().equals(ElementKind.METHOD) ||
+                    element.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     annotatedMethods.add(getMethodIdentifierString(element));
                 }
             }
         }
+        annotatedElements.add(annotatedClasses);
+        annotatedElements.add(annotatedMethods);
+        return annotatedElements;
     }
 
     private void makeAnnotatedElementsFiles(
@@ -201,18 +209,30 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private String getMethodIdentifierString(Element methodElement) {
+        TypeVisitor<ExecutableType, Void> executableTypeVisitor =
+            new SimpleTypeVisitor6<ExecutableType, Void>() {
+                @Override
+                public ExecutableType visitExecutable(
+                    ExecutableType executableType, Void obj
+                ) {
+                    return executableType;
+                }
+            };
         List<? extends TypeMirror> methodParams =
-            ((ExecutableType) methodElement.asType()).getParameterTypes();
+            methodElement.asType()
+                .accept(executableTypeVisitor, null)
+                .getParameterTypes();
         String fullClassPattern =
             getClassHeader(methodElement.getEnclosingElement());
         String fullClassName =
             fullClassPattern.substring(0, fullClassPattern.indexOf('('));
         String methodSignature = "";
-        if (methodElement.getKind().toString().equals("CONSTRUCTOR")) {
+        if (methodElement.getKind().equals(ElementKind.CONSTRUCTOR)) {
             int index = fullClassName.lastIndexOf("\\$");
             if (index != -1) {
                 methodSignature +=
-                    "L" + fullClassName.substring(0, index) + ";";
+                    "L" + fullClassName.substring(0, index)
+                        .replace("\\$", "/") + ";";
             }
         }
         methodSignature += getMethodSignature(methodParams);
@@ -227,42 +247,51 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         }
         String methodSignature = "";
         for (TypeMirror param : methodParams) {
-            if (param.getKind().name().equals("TYPEVAR")) {
+            if (param.getKind().equals(TypeKind.TYPEVAR)) {
                 methodSignature += "Ljava/lang/Object;";
                 continue;
-            }
-            String paramString = param.toString();
-            if (paramString.indexOf('[') == -1) {
-                methodSignature += getParameterType(paramString);
-            } else {
-                int count = CharMatcher.is('[').countIn(paramString);
+            } else if (param.getKind().equals(TypeKind.ARRAY)) {
+                int count = CharMatcher.is('[').countIn(param.toString());
                 String arrayString = Strings.repeat("[", count);
-                String arrayType = getParameterType(
-                    paramString.substring(0, paramString.indexOf('[')));
+                String arrayType = getArrayType(param);
                 methodSignature += arrayString + arrayType;
+            } else {
+                methodSignature += getParameterType(param);
             }
         }
         return methodSignature;
     }
 
-    private String getParameterType(String paramString) {
-        if (paramString.equals("int")) {
+    public final String getArrayType(TypeMirror param) {
+        while (param.getKind().equals(TypeKind.ARRAY)) {
+            param = ((ArrayType) param).getComponentType();
+        }
+        return getParameterType(param);
+    }
+
+    private String getParameterType(TypeMirror param) {
+        if (param.getKind().equals(TypeKind.INT)) {
             return "I";
-        } else if (paramString.equals("boolean")) {
+        } else if (param.getKind().equals(TypeKind.BOOLEAN)) {
             return "Z";
-        } else if (paramString.equals("byte")) {
+        } else if (param.getKind().equals(TypeKind.BYTE)) {
             return "B";
-        } else if (paramString.equals("char")) {
+        } else if (param.getKind().equals(TypeKind.CHAR)) {
             return "C";
-        } else if (paramString.equals("short")) {
+        } else if (param.getKind().equals(TypeKind.SHORT)) {
             return "S";
-        } else if (paramString.equals("long")) {
+        } else if (param.getKind().equals(TypeKind.LONG)) {
             return "J";
-        } else if (paramString.equals("float")) {
+        } else if (param.getKind().equals(TypeKind.FLOAT)) {
             return "F";
-        } else if (paramString.equals("double")) {
+        } else if (param.getKind().equals(TypeKind.DOUBLE)) {
             return "D";
         } else {
+            String paramString = param.toString();
+            if (paramString.contains("<")) {
+                paramString =
+                    paramString.substring(0, paramString.indexOf('<'));
+            }
             return "L" + paramString.replace('.', '/') + ";";
         }
     }

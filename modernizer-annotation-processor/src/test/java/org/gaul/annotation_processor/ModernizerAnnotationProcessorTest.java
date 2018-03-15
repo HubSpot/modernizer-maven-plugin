@@ -88,14 +88,14 @@ public final class ModernizerAnnotationProcessorTest {
             "org/gaul/annotation_processor/" +
                 "ModernizerAnnotationProcessorTest," +
                 "testMethodPrimitiveAndGenericTypeParameters," +
-                "Ljava/util/List<java/lang/String>;F",
+                "Ljava/util/List;F",
             "org/gaul/annotation_processor/" +
                 "ModernizerAnnotationProcessorTest," +
                 "testOverloadedMethod,",
             "org/gaul/annotation_processor/" +
                 "ModernizerAnnotationProcessorTest," +
                 "testArrayParameters," +
-                "[Ljava/lang/String;[[I[Ljava/util/List<java/lang/Integer>;");
+                "[Ljava/lang/String;[[I[Ljava/util/List;");
         File ignoreMethodsFile = new File(System.getProperty("user.dir") +
             "/target/modernizer/test/ignore-annotated-methods.txt");
         BufferedReader br =

@@ -409,7 +409,7 @@ public final class ModernizerTest {
                 "\\$IgnoreMethodTestClass," +
                 "testMethodDeclaredTypeParameter," +
                 "Lorg/gaul/modernizer_maven_plugin/ModernizerTest" +
-                "$StringGetBytesString;");
+                "/StringGetBytesString;");
         ignoreMethodNames.add(
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
                 "\\$IgnoreMethodTestClass," +

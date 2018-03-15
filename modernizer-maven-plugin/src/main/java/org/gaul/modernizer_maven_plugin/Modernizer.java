@@ -265,8 +265,8 @@ final class ModernizerClassVisitor extends ClassVisitor {
             String methodSignature =
                 methodDescriptor.substring(
                     methodDescriptor.indexOf('(') + 1,
-                    methodDescriptor.indexOf(')')
-                );
+                    methodDescriptor.indexOf(')'))
+                    .replace('$', '/');
             if ((Pattern.compile(ignoreMethodParts[0])
                 .matcher(className).matches()) &&
                 methodName.equals(ignoreMethodParts[1])) {
