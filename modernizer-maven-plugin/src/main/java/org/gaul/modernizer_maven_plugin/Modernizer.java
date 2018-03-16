@@ -129,11 +129,11 @@ final class ModernizerClassVisitor extends ClassVisitor {
     private final Collection<Pattern> exclusionPatterns;
     private final Collection<String> ignorePackages;
     private final Collection<Pattern> ignoreFullClassNamePatterns;
+    private final Collection<String> ignoreMethods;
     private final Collection<ViolationOccurrence> occurrences =
             new ArrayList<ViolationOccurrence>();
     private String packageName;
     private String className;
-    private final Collection<String> ignoreMethods;
 
     ModernizerClassVisitor(long javaVersion,
             Map<String, Violation> violations, Collection<String> exclusions,
@@ -231,25 +231,37 @@ final class ModernizerClassVisitor extends ClassVisitor {
         if (violation != null && !exclusions.contains(token) &&
                 javaVersion >= violation.getVersion() &&
                 !ignorePackages.contains(packageName)) {
-            if (ignoreClass()) {
+            if (checkExclusions(token, methodName, methodDescriptor)) {
                 return;
-            }
-            if (ignoreMethod(methodName, methodDescriptor)) {
-                return;
-            }
-            for (Pattern pattern : exclusionPatterns) {
-                if (pattern.matcher(token).matches()) {
-                    return;
-                }
-            }
-            for (String prefix : ignorePackages) {
-                if (packageName.startsWith(prefix + ".")) {
-                    return;
-                }
             }
             occurrences.add(new ViolationOccurrence(name, lineNumber,
                     violation));
         }
+    }
+
+    private boolean checkExclusions(
+        String token,
+        String methodName,
+        String methodDescriptor
+    ) {
+        if (ignoreClass()) {
+            return true;
+        }
+        if (!methodName.isEmpty() && !methodDescriptor.isEmpty() &&
+            ignoreMethod(methodName, methodDescriptor)) {
+            return true;
+        }
+        for (Pattern pattern : exclusionPatterns) {
+            if (pattern.matcher(token).matches()) {
+                return true;
+            }
+        }
+        for (String prefix : ignorePackages) {
+            if (packageName.startsWith(prefix + ".")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean ignoreClass() {
@@ -262,28 +274,14 @@ final class ModernizerClassVisitor extends ClassVisitor {
     }
 
     private boolean ignoreMethod(String methodName, String methodDescriptor) {
-        if (methodName.isEmpty() && methodDescriptor.isEmpty()) {
-            return false;
-        }
-        for (String ignoreMethod : ignoreMethods) {
-            String[] ignoreMethodParts = ignoreMethod.split(",");
-            String methodSignature =
-                methodDescriptor.substring(
-                    methodDescriptor.indexOf('(') + 1,
-                    methodDescriptor.indexOf(')'))
-                    .replace('$', '/');
-            if ((Pattern.compile(ignoreMethodParts[0])
-                .matcher(className).matches()) &&
-                methodName.equals(ignoreMethodParts[1])) {
-                if (ignoreMethodParts.length == 2 &&
-                    methodSignature.isEmpty()) {
-                    return true;
-                }
-                if (ignoreMethodParts.length == 3 &&
-                    ignoreMethodParts[2].equals(methodSignature)) {
-                    return true;
-                }
-            }
+        String methodParams = methodDescriptor.substring(
+            methodDescriptor.indexOf('(') + 1,
+            methodDescriptor.indexOf(')'))
+            .replace('$', '/');
+        String methodDescription = className.replace("$", "\\$") + "," +
+            methodName + "," + methodParams;
+        if (ignoreMethods.contains(methodDescription)) {
+            return true;
         }
         return false;
     }
