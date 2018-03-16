@@ -23,101 +23,163 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public final class ModernizerAnnotationProcessorTest {
 
-    @Test
-    public void checkAnnotatedClasses() throws IOException {
-        List<String> classesList = Arrays.asList(
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest\\$TestClass(\\$.+)?",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest\\$TestClass" +
-                "\\$InnerTestClass(\\$.+)?",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest" +
-                "\\$TestGenericClass(\\$.+)?");
+    private List<String> ignoreClasses = new ArrayList<String>();
+    private List<String> ignoreMethods = new ArrayList<String>();
+
+    @Before
+    public void readIgnoreClassesAndMethodsFiles() throws IOException {
         File ignoreClassesFile = new File(System.getProperty("user.dir") +
             "/target/modernizer/test/ignore-annotated-classes.txt");
+        File ignoreMethodsFile = new File(System.getProperty("user.dir") +
+            "/target/modernizer/test/ignore-annotated-methods.txt");
+
         BufferedReader br =
             new BufferedReader(new FileReader(ignoreClassesFile));
-        String st;
-        List<String> ignoredClasses = new ArrayList<String>();
-        while ((st = br.readLine()) != null) {
-            ignoredClasses.add(st);
+        String line;
+        while ((line = br.readLine()) != null) {
+            ignoreClasses.add(line);
         }
-        assertThat(classesList).isEqualTo(ignoredClasses);
-        assertThat(classesList).doesNotContain(
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-                "\\$TestClass\\$InnerClassNotToBeIgnored(\\$.+)?");
+
+        br = new BufferedReader(new FileReader(ignoreMethodsFile));
+        ignoreMethods = new ArrayList<String>();
+        while ((line = br.readLine()) != null) {
+            ignoreMethods.add(line);
+        }
     }
 
     @Test
-    public void checkAnnotatedMethods() throws IOException {
-        List<String> methodsList = Arrays.asList(
+    public void checkIgnoreClass() {
+        String classHeader = "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest\\$TestClass(\\$.+)?";
+        assertThat(ignoreClasses).contains(classHeader);
+    }
+
+    @Test
+    public void checkIgnoreInnerClass() {
+        String classHeader = "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest\\$TestClass" +
+            "\\$InnerTestClass(\\$.+)?";
+        assertThat(ignoreClasses).contains(classHeader);
+    }
+
+    @Test
+    public void checkIgnoreGenericClass() {
+        String classHeader = "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest\\$TestGenericClass(\\$.+)?";
+        assertThat(ignoreClasses).contains(classHeader);
+    }
+
+    @Test
+    public void checkInnerClassWithoutSuppressionNotIgnored() {
+        String classHeader = "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest\\$TestClass" +
+            "\\$InnerClassNotToBeIgnored(\\$.+)?";
+        assertThat(ignoreClasses).doesNotContain(classHeader);
+    }
+
+    @Test
+    public void checkIgnoreConstructor() {
+        String method =
             "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-                "\\$TestClass," +
-                "<init>," +
-                "Lorg/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest;",
+            "\\$TestClass,<init>,Lorg/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest;";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreGenericClassConstructor() {
+        String method =
             "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-                "\\$TestGenericClass," +
-                "<init>," +
-                "Lorg/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest;",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest\\$TestGenericClass," +
-                "testGenericMethod," +
-                "Ljava/lang/Object;",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testMethodEmptyParameters,",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testMethodPrimitiveTypeParameters," +
-                "IZBCSJFD",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testMethodDeclaredTypeParameter," +
-                "Lorg/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest/TestClass;",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testMethodPrimitiveAndGenericTypeParameters," +
-                "Ljava/util/List;F",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testOverloadedMethod,",
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testArrayParameters," +
-                "[Ljava/lang/String;[[I[Ljava/util/List;");
-        File ignoreMethodsFile = new File(System.getProperty("user.dir") +
-            "/target/modernizer/test/ignore-annotated-methods.txt");
-        BufferedReader br =
-            new BufferedReader(new FileReader(ignoreMethodsFile));
-        String st;
-        List<String> ignoredMethods = new ArrayList<String>();
-        while ((st = br.readLine()) != null) {
-            ignoredMethods.add(st);
-        }
-        assertThat(methodsList).isEqualTo(ignoredMethods);
-        assertThat(methodsList).doesNotContain(
-            "org/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest," +
-                "testOverloadedMethod,I");
-        assertThat(methodsList).doesNotContain(
+            "\\$TestGenericClass,<init>,Lorg/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest;";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodInGenericClass() {
+        String method =
             "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-                "\\$TestGenericClass," +
-                "<init>," +
-                "Lorg/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessorTest;" +
-                "Lorg/gaul/annotation_processor/" +
-                "ModernizerAnnotationProcessor$TestClass");
+            "\\$TestGenericClass,testGenericMethod,Ljava/lang/Object;";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodWithEmptyParameters() {
+        String method =
+            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest," +
+            "testMethodEmptyParameters,";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodWithPrimitiveTypeParameters() {
+        String method =
+            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest," +
+            "testMethodPrimitiveTypeParameters,IZBCSJFD";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodWithDeclaredTypeParameters() {
+        String method =
+            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest," +
+            "testMethodDeclaredTypeParameter,Lorg/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest/TestClass;";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodWithPrimitiveAndGenericTypeParameters() {
+        String method =
+            "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest," +
+            "testMethodPrimitiveAndGenericTypeParameters,Ljava/util/List;F";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreOverloadedMethod() {
+        String method =
+            "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest,testOverloadedMethod,";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodWithArrayTypeParameters() {
+        String method =
+            "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest,testArrayParameters," +
+            "[Ljava/lang/String;[[I[Ljava/util/List;";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkOverloadedMethodNotIgnored() {
+        String method =
+            "org/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest,testOverloadedMethod,I";
+        assertThat(ignoreMethods).doesNotContain(method);
+    }
+
+    @Test
+    public void checkOverloadedConstructorNotIgnored() {
+        String method =
+            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
+            "\\$TestGenericClass," +
+            "<init>," +
+            "Lorg/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessorTest;" +
+            "Lorg/gaul/annotation_processor/" +
+            "ModernizerAnnotationProcessor$TestClass";
+        assertThat(ignoreMethods).doesNotContain(method);
     }
 
     // Helper methods and classes
