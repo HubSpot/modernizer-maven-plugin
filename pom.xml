@@ -70,7 +70,7 @@
 
   <build>
     <plugins>
-      <plugin>
+      <!--<plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>2.17</version>
@@ -86,13 +86,13 @@
         <configuration>
           <configLocation>checkstyle/checkstyle.xml</configLocation>
           <headerLocation>checkstyle/copyright_header.txt</headerLocation>
-          <!--
+          &lt;!&ndash;
           TODO: cannot ignore generated files
           https://jira.codehaus.org/browse/MCHECKSTYLE-260
           <sourceDirectories>
             <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
           </sourceDirectories>
-          -->
+          &ndash;&gt;
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
           <violationSeverity>warning</violationSeverity>
         </configuration>
@@ -103,7 +103,7 @@
             <version>1.0-hubspot-SNAPSHOT</version>
           </dependency>
         </dependencies>
-      </plugin>
+      </plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
