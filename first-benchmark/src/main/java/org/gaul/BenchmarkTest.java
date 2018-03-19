@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -34,9 +32,7 @@ import org.gaul.modernizer_maven_plugin.Utils;
 import org.gaul.modernizer_maven_plugin.Violation;
 import org.gaul.modernizer_maven_plugin.ViolationOccurrence;
 import org.objectweb.asm.ClassReader;
-import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.GenerateMicroBenchmark;
-import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -55,8 +51,6 @@ public class BenchmarkTest {
     public final Collection<Pattern> NO_EXCLUSION_PATTERNS =
         Collections.emptySet();
     public final Collection<String> NO_IGNORED_PACKAGES =
-        Collections.emptySet();
-    public final Collection<String> NO_IGNORED_METHODS =
         Collections.emptySet();
     private ClassReader cr;
     private Collection<String> ignoreMethodNames;
