@@ -104,51 +104,26 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         File outputDir = getOutputDirectory();
         outputDir.mkdirs();
         if (!annotatedClasses.isEmpty()) {
-            makeAnnotatedClassesFile(outputDir, annotatedClasses);
+            makeFile(outputDir.getPath() + "/" +
+                ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME,
+                annotatedClasses);
         }
         if (!annotatedMethods.isEmpty()) {
-            makeAnnotatedMethodsFile(outputDir, annotatedMethods);
+            makeFile(outputDir.getPath() + "/" +
+                ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME,
+                annotatedMethods);
         }
     }
 
-    private void makeAnnotatedClassesFile(
-        File outputDir,
-        List<String> annotatedClasses
+    private void makeFile(
+        String outputPath,
+        List<String> annotatedElements
     ) {
-        File file = new File(
-            outputDir,
-            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
+        File file = new File(outputPath);
         Writer writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(file));
-            for (String element : annotatedClasses) {
-                writer.write(element + "\n");
-            }
-            writer.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    private void makeAnnotatedMethodsFile(
-        File outputDir,
-        List<String> annotatedMethods
-    ) {
-        File file = new File(
-            outputDir,
-            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME);
-        Writer writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(file));
-            for (String element : annotatedMethods) {
+            for (String element : annotatedElements) {
                 writer.write(element + "\n");
             }
             writer.close();
