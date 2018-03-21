@@ -214,28 +214,28 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
-        Collection<String> ignoreClasses = getIgnoreElements(
+        Collection<String> ignoreClasses = getIgnoreElements(new File(
             ModernizerAnnotationOutput.getOutputDir(outputDirectory),
-            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
+            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME));
         for (String ignoreClass : ignoreClasses) {
             allIgnoreFullClassNamePatterns.add(Pattern.compile(ignoreClass));
         }
 
-        Collection<String> ignoreTestClasses = getIgnoreElements(
+        Collection<String> ignoreTestClasses = getIgnoreElements(new File(
             ModernizerAnnotationOutput.getOutputDir(testOutputDirectory),
-            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
+            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME));
         for (String ignoreTestClass : ignoreTestClasses) {
             allIgnoreFullClassNamePatterns
                 .add(Pattern.compile(ignoreTestClass));
         }
 
         Set<String> allIgnoreMethodNames = new HashSet<String>();
-        allIgnoreMethodNames.addAll(getIgnoreElements(
+        allIgnoreMethodNames.addAll(getIgnoreElements(new File(
             ModernizerAnnotationOutput.getOutputDir(outputDirectory),
-            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME));
-        allIgnoreMethodNames.addAll(getIgnoreElements(
+            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME)));
+        allIgnoreMethodNames.addAll(getIgnoreElements(new File(
             ModernizerAnnotationOutput.getOutputDir(testOutputDirectory),
-            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME));
+            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME)));
 
         modernizer = new Modernizer(javaVersion, allViolations, allExclusions,
                 allExclusionPatterns, ignorePackages,
@@ -255,11 +255,8 @@ public final class ModernizerMojo extends AbstractMojo {
         }
     }
 
-    private Collection<String> getIgnoreElements(
-        File outputDir,
-        String fileName
-    ) throws MojoExecutionException {
-        File ignoreFile = new File(outputDir, fileName);
+    private Collection<String> getIgnoreElements(File ignoreFile)
+        throws MojoExecutionException {
         Collection<String> ignoreElements = new ArrayList<String>();
         if (ignoreFile.exists()) {
             ignoreElements = readExclusionsFile(ignoreFile.toString());

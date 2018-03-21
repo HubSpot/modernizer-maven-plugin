@@ -206,13 +206,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     return executableType;
                 }
             };
-        List<? extends TypeMirror> methodParams =
-            methodElement.asType()
-                .accept(executableTypeVisitor, null)
-                .getParameterTypes();
-        TypeMirror returnType = methodElement.asType()
-            .accept(executableTypeVisitor, null)
-            .getReturnType();
+        ExecutableType method =
+            methodElement.asType().accept(executableTypeVisitor, null);
+        List<? extends TypeMirror> methodParams = method.getParameterTypes();
+        TypeMirror returnType = method.getReturnType();
         String returnTypeString = "";
         if (returnType.getKind().equals(TypeKind.ARRAY)) {
             returnTypeString = getArrayType(returnType);

@@ -174,6 +174,15 @@ public final class ModernizerAnnotationProcessorTest {
     }
 
     @Test
+    public void checkIgnoreMethodWithVoidParameter() {
+        String method =
+            "org/gaul/modernizer_annotation_processor/" +
+                "ModernizerAnnotationProcessorTest testVoidParameter " +
+                "void java.lang.Void";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
     public void checkOverloadedMethodNotIgnored() {
         String method =
             "org/gaul/modernizer_annotation_processor/" +
@@ -317,6 +326,10 @@ public final class ModernizerAnnotationProcessorTest {
         List<Integer> [] listOfArrays,
         TestClass[] array
     ) {
+    }
+
+    @SuppressWarnings("modernizer")
+    public void testVoidParameter(Void var) {
     }
 
     @SuppressWarnings("modernizer")

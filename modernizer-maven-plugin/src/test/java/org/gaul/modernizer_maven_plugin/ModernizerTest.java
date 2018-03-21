@@ -402,6 +402,22 @@ public final class ModernizerTest {
     }
 
     @Test
+    public void checkIgnoreMethodWithVoidParameter() throws Exception {
+        ClassReader cr = new ClassReader(
+            IgnoreMethodWithVoidParameterTestClass.class.getName());
+        Set<String> ignoreMethodName = new HashSet<String>();
+        ignoreMethodName.add(
+            "org/gaul/modernizer_maven_plugin/ModernizerTest" +
+                "$IgnoreMethodWithVoidParameterTestClass " +
+                "testMethodVoidParameter void java.lang.Void");
+        Collection<ViolationOccurrence> occurences = new Modernizer(
+            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
+            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
+            .check(cr);
+        assertThat(occurences).hasSize(0);
+    }
+
+    @Test
     public void checkIgnoreMethodWithPrimitiveTypeParameters()
         throws Exception {
         ClassReader cr = new ClassReader(
@@ -939,6 +955,12 @@ public final class ModernizerTest {
 
     private static class IgnoreMethodWithEmptyParametersTestClass {
         private static void testMethodEmptyParameters() throws Exception {
+            "".getBytes("UTF-8");
+        }
+    }
+
+    private static class IgnoreMethodWithVoidParameterTestClass {
+        private static void testMethodVoidParameter(Void var) throws Exception {
             "".getBytes("UTF-8");
         }
     }
