@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.gaul.annotation_processsor;
+package org.gaul.modernizer_annotation_processor;
 
 import java.io.File;
 

@@ -14,20 +14,11 @@
   <artifactId>modernizer-annotation-processor</artifactId>
   <version>1.0-hubspot-SNAPSHOT</version>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.google.auto.service</groupId>
-        <artifactId>auto-service</artifactId>
-        <version>1.0-rc4</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service</artifactId>
+      <version>1.0-rc4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

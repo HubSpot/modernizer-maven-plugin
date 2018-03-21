@@ -274,12 +274,15 @@ final class ModernizerClassVisitor extends ClassVisitor {
     }
 
     private boolean ignoreMethod(String methodName, String methodDescriptor) {
-        String methodParams = methodDescriptor.substring(
-            methodDescriptor.indexOf('(') + 1,
-            methodDescriptor.indexOf(')'))
-            .replace('$', '/');
-        String methodDescription = className.replace("$", "\\$") + "," +
-            methodName + "," + methodParams;
+        String returnType = Type.getReturnType(methodDescriptor).getClassName();
+        StringBuilder arguments = new StringBuilder("");
+        for (Type arg : Type.getArgumentTypes(methodDescriptor)) {
+            arguments.append(" ");
+            arguments.append(arg.getClassName());
+        }
+        String methodDescription =
+            className + " " + methodName + " " + returnType + " " +
+            arguments.toString().trim().replace('$', '.');
         if (ignoreMethods.contains(methodDescription)) {
             return true;
         }

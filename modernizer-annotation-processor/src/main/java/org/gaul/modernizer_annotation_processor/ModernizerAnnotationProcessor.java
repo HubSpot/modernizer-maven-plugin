@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.gaul.annotation_processsor;
+package org.gaul.modernizer_annotation_processor;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -44,7 +44,6 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 import com.google.auto.service.AutoService;
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 
 @SupportedAnnotationTypes("java.lang.SuppressWarnings")
@@ -56,27 +55,62 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         return SourceVersion.latest();
     }
 
+    private class AnnotatedElements {
+        private List<String> annotatedClasses;
+        private List<String> annotatedMethods;
+
+        AnnotatedElements() {
+            annotatedClasses = new ArrayList<String>();
+            annotatedMethods = new ArrayList<String>();
+        }
+
+        public List<String> getAnnotatedClasses() {
+            return annotatedClasses;
+        }
+
+        public void setAnnotatedClasses(List<String> annotatedClasses) {
+            this.annotatedClasses = annotatedClasses;
+        }
+
+        public List<String> getAnnotatedMethods() {
+            return annotatedMethods;
+        }
+
+        public void setAnnotatedMethods(List<String> annotatedMethods) {
+            this.annotatedMethods = annotatedMethods;
+        }
+    }
+
     @Override
     public final boolean process(
         Set<? extends TypeElement> annotations,
         RoundEnvironment roundEnv
     ) {
         for (TypeElement annotation : annotations) {
-            List<List<String>> annotatedElements =
+            AnnotatedElements annotatedElements =
                 getAnnotatedElements(roundEnv, annotation);
-            makeAnnotatedElementsFiles(
-                annotatedElements.get(0), annotatedElements.get(1));
+            if (!(annotatedElements.getAnnotatedClasses().isEmpty() &&
+                annotatedElements.getAnnotatedMethods().isEmpty())) {
+                File outputDir = getOutputDirectory();
+                outputDir.mkdirs();
+                makeFile(new File(outputDir,
+                    ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME),
+                    annotatedElements.getAnnotatedClasses());
+                makeFile(new File(outputDir,
+                    ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME),
+                    annotatedElements.getAnnotatedMethods());
+            }
         }
         return true;
     }
 
-    private List<List<String>> getAnnotatedElements(
+    private AnnotatedElements getAnnotatedElements(
         RoundEnvironment roundEnv,
         TypeElement annotation
     ) {
+        AnnotatedElements elements = new AnnotatedElements();
         List<String> annotatedClasses = new ArrayList<String>();
         List<String> annotatedMethods = new ArrayList<String>();
-        List<List<String>> annotatedElements = new ArrayList<List<String>>();
         for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
             List<String> warnings = Arrays.asList(
                     element.getAnnotation(SuppressWarnings.class).value());
@@ -89,37 +123,16 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                 }
             }
         }
-        annotatedElements.add(annotatedClasses);
-        annotatedElements.add(annotatedMethods);
-        return annotatedElements;
+        elements.setAnnotatedClasses(annotatedClasses);
+        elements.setAnnotatedMethods(annotatedMethods);
+        return elements;
     }
 
-    private void makeAnnotatedElementsFiles(
-        List<String> annotatedClasses,
-        List<String> annotatedMethods
-    ) {
-        if (annotatedClasses.isEmpty() && annotatedMethods.isEmpty()) {
-            return;
-        }
-        File outputDir = getOutputDirectory();
-        outputDir.mkdirs();
-        if (!annotatedClasses.isEmpty()) {
-            makeFile(outputDir.getPath() + "/" +
-                ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME,
-                annotatedClasses);
-        }
-        if (!annotatedMethods.isEmpty()) {
-            makeFile(outputDir.getPath() + "/" +
-                ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME,
-                annotatedMethods);
-        }
-    }
 
     private void makeFile(
-        String outputPath,
+        File file,
         List<String> annotatedElements
     ) {
-        File file = new File(outputPath);
         Writer writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(file));
@@ -197,77 +210,77 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             methodElement.asType()
                 .accept(executableTypeVisitor, null)
                 .getParameterTypes();
+        TypeMirror returnType = methodElement.asType()
+            .accept(executableTypeVisitor, null)
+            .getReturnType();
+        String returnTypeString = "";
+        if (returnType.getKind().equals(TypeKind.ARRAY)) {
+            returnTypeString = getArrayType(returnType);
+        } else {
+            returnTypeString = getParameterType(returnType);
+        }
         String fullClassPattern =
             getClassHeader(methodElement.getEnclosingElement());
         String fullClassName =
-            fullClassPattern.substring(0, fullClassPattern.indexOf('('));
-        String methodSignature = "";
+            fullClassPattern.substring(0, fullClassPattern.indexOf('('))
+            .replace("\\$", "$");
+        String methodArguments = "";
         if (methodElement.getKind().equals(ElementKind.CONSTRUCTOR)) {
-            int index = fullClassName.lastIndexOf("\\$");
+            int index = fullClassName.lastIndexOf("$");
             if (index != -1) {
-                methodSignature +=
-                    "L" + fullClassName.substring(0, index)
-                        .replace("\\$", "/") + ";";
+                methodArguments += fullClassName.substring(0, index) + " ";
             }
         }
-        methodSignature += getMethodSignature(methodParams);
-        return fullClassName + "," +
-            methodElement.getSimpleName().toString() + "," +
-            methodSignature.replace("\\$", "$");
+        methodArguments += getMethodArguments(methodParams);
+        methodArguments = methodArguments.replace('/', '.')
+            .replace("$", ".");
+        methodArguments = !methodArguments.isEmpty() ?
+            methodArguments.substring(0, methodArguments.length() - 1) :
+            methodArguments;
+        return fullClassName + " " + methodElement.getSimpleName() + " " +
+            returnTypeString + " " + methodArguments;
     }
 
-    private String getMethodSignature(List<? extends TypeMirror> methodParams) {
+    private String getMethodArguments(List<? extends TypeMirror> methodParams) {
         if (methodParams.isEmpty()) {
             return "";
         }
-        String methodSignature = "";
+        StringBuilder methodArguments = new StringBuilder("");
         for (TypeMirror param : methodParams) {
-            if (param.getKind().equals(TypeKind.TYPEVAR)) {
-                methodSignature += "Ljava/lang/Object;";
-                continue;
-            } else if (param.getKind().equals(TypeKind.ARRAY)) {
-                int count = CharMatcher.is('[').countIn(param.toString());
-                String arrayString = Strings.repeat("[", count);
-                String arrayType = getArrayType(param);
-                methodSignature += arrayString + arrayType;
+            String arg;
+            if (param.getKind().equals(TypeKind.ARRAY)) {
+                arg = getArrayType(param);
             } else {
-                methodSignature += getParameterType(param);
+                arg = getParameterType(param);
             }
+            methodArguments.append(arg);
+            methodArguments.append(" ");
         }
-        return methodSignature;
+        return methodArguments.toString();
     }
 
     public final String getArrayType(TypeMirror param) {
+        int arrayLength = 0;
+        TypeMirror paramType = param;
         while (param.getKind().equals(TypeKind.ARRAY)) {
             param = ((ArrayType) param).getComponentType();
+            arrayLength++;
         }
-        return getParameterType(param);
+        if (param.getKind().isPrimitive()) {
+            return paramType.toString();
+        }
+        return getParameterType(param) + Strings.repeat("[]", arrayLength);
     }
 
-    private String getParameterType(TypeMirror param) {
-        if (param.getKind().equals(TypeKind.INT)) {
-            return "I";
-        } else if (param.getKind().equals(TypeKind.BOOLEAN)) {
-            return "Z";
-        } else if (param.getKind().equals(TypeKind.BYTE)) {
-            return "B";
-        } else if (param.getKind().equals(TypeKind.CHAR)) {
-            return "C";
-        } else if (param.getKind().equals(TypeKind.SHORT)) {
-            return "S";
-        } else if (param.getKind().equals(TypeKind.LONG)) {
-            return "J";
-        } else if (param.getKind().equals(TypeKind.FLOAT)) {
-            return "F";
-        } else if (param.getKind().equals(TypeKind.DOUBLE)) {
-            return "D";
+    public final String getParameterType(TypeMirror param) {
+        if (param.getKind().equals(TypeKind.TYPEVAR)) {
+            return "java.lang.Object";
         } else {
             String paramString = param.toString();
             if (paramString.contains("<")) {
-                paramString =
-                    paramString.substring(0, paramString.indexOf('<'));
+                return paramString.substring(0, paramString.indexOf("<"));
             }
-            return "L" + paramString.replace('.', '/') + ";";
+            return paramString;
         }
     }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.gaul.annotation_processor;
+package org.gaul.modernizer_annotation_processor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,14 +56,14 @@ public final class ModernizerAnnotationProcessorTest {
 
     @Test
     public void checkIgnoreClass() {
-        String classHeader = "org/gaul/annotation_processor/" +
+        String classHeader = "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest\\$TestClass(\\$.+)?";
         assertThat(ignoreClasses).contains(classHeader);
     }
 
     @Test
     public void checkIgnoreInnerClass() {
-        String classHeader = "org/gaul/annotation_processor/" +
+        String classHeader = "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest\\$TestClass" +
             "\\$InnerTestClass(\\$.+)?";
         assertThat(ignoreClasses).contains(classHeader);
@@ -71,14 +71,14 @@ public final class ModernizerAnnotationProcessorTest {
 
     @Test
     public void checkIgnoreGenericClass() {
-        String classHeader = "org/gaul/annotation_processor/" +
+        String classHeader = "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest\\$TestGenericClass(\\$.+)?";
         assertThat(ignoreClasses).contains(classHeader);
     }
 
     @Test
     public void checkInnerClassWithoutSuppressionNotIgnored() {
-        String classHeader = "org/gaul/annotation_processor/" +
+        String classHeader = "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest\\$TestClass" +
             "\\$InnerClassNotToBeIgnored(\\$.+)?";
         assertThat(ignoreClasses).doesNotContain(classHeader);
@@ -87,99 +87,144 @@ public final class ModernizerAnnotationProcessorTest {
     @Test
     public void checkIgnoreConstructor() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-            "\\$TestClass,<init>,Lorg/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest;";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest$TestClass " +
+            "<init> void org.gaul.modernizer_annotation_processor." +
+            "ModernizerAnnotationProcessorTest";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreGenericClassConstructor() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-            "\\$TestGenericClass,<init>,Lorg/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest;";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest$TestGenericClass " +
+            "<init> void org.gaul.modernizer_annotation_processor." +
+            "ModernizerAnnotationProcessorTest";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreMethodInGenericClass() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-            "\\$TestGenericClass,testGenericMethod,Ljava/lang/Object;";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest$TestGenericClass " +
+            "testGenericMethod void java.lang.Object";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreMethodWithEmptyParameters() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest," +
-            "testMethodEmptyParameters,";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest testMethodEmptyParameters " +
+            "void ";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreMethodWithPrimitiveTypeParameters() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest," +
-            "testMethodPrimitiveTypeParameters,IZBCSJFD";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodPrimitiveTypeParameters void int boolean " +
+            "byte char short long float double";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreMethodWithDeclaredTypeParameters() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest," +
-            "testMethodDeclaredTypeParameter,Lorg/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest/TestClass;";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodDeclaredTypeParameter void " +
+            "org.gaul.modernizer_annotation_processor" +
+            ".ModernizerAnnotationProcessorTest.TestClass";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreMethodWithPrimitiveAndGenericTypeParameters() {
         String method =
-            "org/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest," +
-            "testMethodPrimitiveAndGenericTypeParameters,Ljava/util/List;F";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodPrimitiveAndGenericTypeParameters void " +
+            "java.util.List float";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreOverloadedMethod() {
         String method =
-            "org/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest,testOverloadedMethod,";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest testOverloadedMethod void ";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkIgnoreMethodWithArrayTypeParameters() {
         String method =
-            "org/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest,testArrayParameters," +
-            "[Ljava/lang/String;[[I[Ljava/util/List;";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest testArrayParameters " +
+            "void java.lang.String[] int[][] java.util.List[]";
         assertThat(ignoreMethods).contains(method);
     }
 
     @Test
     public void checkOverloadedMethodNotIgnored() {
         String method =
-            "org/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest,testOverloadedMethod,I";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest testOverloadedMethod " +
+            "void int";
         assertThat(ignoreMethods).doesNotContain(method);
     }
 
     @Test
     public void checkOverloadedConstructorNotIgnored() {
         String method =
-            "org/gaul/annotation_processor/ModernizerAnnotationProcessorTest" +
-            "\\$TestGenericClass," +
-            "<init>," +
-            "Lorg/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessorTest;" +
-            "Lorg/gaul/annotation_processor/" +
-            "ModernizerAnnotationProcessor$TestClass";
+            "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest$TestGenericClass " +
+            "<init> void " +
+            "org.gaul.modernizer_annotation_processor." +
+            "ModernizerAnnotationProcessorTest " +
+            "org.gaul.modernizer_annotation_processor." +
+            "ModernizerAnnotationProcessor.TestClass";
         assertThat(ignoreMethods).doesNotContain(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodReturningPrimitiveType() {
+        String method = "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodReturningPrimitiveType int ";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodReturningDeclaredType() {
+        String method = "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodReturningDeclaredType " +
+            "org.gaul.modernizer_annotation_processor." +
+            "ModernizerAnnotationProcessorTest.TestClass ";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodReturningGenericType() {
+        String method = "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodReturningGenericType " +
+            "java.util.List ";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodReturningMethod() {
+        String method = "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodReturningArray int[] ";
+        assertThat(ignoreMethods).contains(method);
     }
 
     // Helper methods and classes
@@ -258,5 +303,27 @@ public final class ModernizerAnnotationProcessorTest {
         int[][] arrayOfArrays,
         List<Integer> [] listOfArrays
     ) {
+    }
+
+    @SuppressWarnings("modernizer")
+    public int testMethodReturningPrimitiveType() {
+        return 0;
+    }
+
+    @SuppressWarnings("modernizer")
+    public TestClass testMethodReturningDeclaredType() {
+        TestClass testClass = new TestClass();
+        return testClass;
+    }
+
+    @SuppressWarnings("modernizer")
+    public List<String> testMethodReturningGenericType() {
+        return new ArrayList<String>();
+    }
+
+    @SuppressWarnings("modernizer")
+    public int[] testMethodReturningArray() {
+        int[] a = new int[10];
+        return a;
     }
 }
