@@ -281,8 +281,9 @@ final class ModernizerClassVisitor extends ClassVisitor {
             arguments.append(arg.getClassName());
         }
         String methodDescription =
-            className + " " + methodName + " " + returnType + " " +
-            arguments.toString().trim().replace('$', '.');
+            className + " " + methodName + " " +
+            (returnType + " " + arguments.toString().trim())
+            .replace('$', '.');
         if (ignoreMethods.contains(methodDescription)) {
             return true;
         }

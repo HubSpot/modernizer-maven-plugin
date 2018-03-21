@@ -109,7 +109,8 @@ public final class ModernizerAnnotationProcessorTest {
         String method =
             "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest$TestGenericClass " +
-            "testGenericMethod void java.lang.Object";
+            "testGenericMethod void java.lang.Object java.util.List " +
+            "java.util.List[]";
         assertThat(ignoreMethods).contains(method);
     }
 
@@ -166,7 +167,9 @@ public final class ModernizerAnnotationProcessorTest {
         String method =
             "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest testArrayParameters " +
-            "void java.lang.String[] int[][] java.util.List[]";
+            "void java.lang.String[] int[][] java.util.List[] " +
+            "org.gaul.modernizer_annotation_processor" +
+            ".ModernizerAnnotationProcessorTest.TestClass[]";
         assertThat(ignoreMethods).contains(method);
     }
 
@@ -220,10 +223,20 @@ public final class ModernizerAnnotationProcessorTest {
     }
 
     @Test
-    public void checkIgnoreMethodReturningMethod() {
+    public void checkIgnoreMethodReturningArrayOfPrimitiveType() {
         String method = "org/gaul/modernizer_annotation_processor/" +
             "ModernizerAnnotationProcessorTest " +
             "testMethodReturningArray int[] ";
+        assertThat(ignoreMethods).contains(method);
+    }
+
+    @Test
+    public void checkIgnoreMethodReturningArrayOfDeclaredType() {
+        String method = "org/gaul/modernizer_annotation_processor/" +
+            "ModernizerAnnotationProcessorTest " +
+            "testMethodReturningArrayOfDeclaredType " +
+            "org.gaul.modernizer_annotation_processor" +
+            ".ModernizerAnnotationProcessorTest.TestClass[] ";
         assertThat(ignoreMethods).contains(method);
     }
 
@@ -258,7 +271,7 @@ public final class ModernizerAnnotationProcessorTest {
         }
 
         @SuppressWarnings("modernizer")
-        public void testGenericMethod(E var) {
+        public void testGenericMethod(E var, List<E> list, List<E>[] lists) {
         }
     }
 
@@ -301,7 +314,8 @@ public final class ModernizerAnnotationProcessorTest {
     public void testArrayParameters(
         String[] strings,
         int[][] arrayOfArrays,
-        List<Integer> [] listOfArrays
+        List<Integer> [] listOfArrays,
+        TestClass[] array
     ) {
     }
 
@@ -325,5 +339,10 @@ public final class ModernizerAnnotationProcessorTest {
     public int[] testMethodReturningArray() {
         int[] a = new int[10];
         return a;
+    }
+
+    @SuppressWarnings("modernizer")
+    public TestClass[] testMethodReturningArrayOfDeclaredType() {
+        return new TestClass[1];
     }
 }
