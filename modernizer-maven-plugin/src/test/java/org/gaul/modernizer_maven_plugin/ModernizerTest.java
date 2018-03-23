@@ -393,7 +393,7 @@ public final class ModernizerTest {
         ignoreMethodName.add(
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
                 "$IgnoreMethodWithEmptyParametersTestClass " +
-                "testMethodEmptyParameters void ");
+                "testMethodEmptyParameters void");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -442,7 +442,7 @@ public final class ModernizerTest {
         Set<String> ignoreMethodName = new HashSet<String>();
         ignoreMethodName.add(
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
-            "$IgnoreConstructorTestClass <init> void ");
+            "$IgnoreConstructorTestClass <init> void");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -511,7 +511,7 @@ public final class ModernizerTest {
         Set<String> ignoreMethodName = new HashSet<String>();
         ignoreMethodName.add(
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
-            "$IgnoreOverloadedMethodTestClass testOverloadedMethod void ");
+            "$IgnoreOverloadedMethodTestClass testOverloadedMethod void");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -546,7 +546,7 @@ public final class ModernizerTest {
         ignoreMethodName.add(
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
             "$IgnoreGenericClassConstructorTestClass " +
-            "<init> void ");
+            "<init> void");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -613,7 +613,7 @@ public final class ModernizerTest {
                 "$IgnoreMethodReturningArrayClassTest " +
                 "testMethodReturningArray " +
                 "org.gaul.modernizer_maven_plugin.ModernizerTest" +
-                ".IgnoreOverloadedMethodTestClass[] ");
+                ".IgnoreOverloadedMethodTestClass[]");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -631,7 +631,7 @@ public final class ModernizerTest {
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
                 "$IgnoreMethodReturningArrayPrimitiveTypeClassTest " +
                 "testMethodReturningArrayPrimitveType " +
-                "int[] ");
+                "int[]");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -648,7 +648,7 @@ public final class ModernizerTest {
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
                 "$IgnoreMethodReturningPrimitiveTypeClassTest " +
                 "testMethodReturningPrimitiveType " +
-                "char ");
+                "char");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -666,7 +666,7 @@ public final class ModernizerTest {
                 "$IgnoreMethodReturningDeclaredTypeClassTest " +
                 "testMethodReturningDeclaredType " +
                 "org.gaul.modernizer_maven_plugin" +
-                ".ModernizerTest.IgnoreConstructorTestClass ");
+                ".ModernizerTest.IgnoreConstructorTestClass");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)
@@ -683,7 +683,7 @@ public final class ModernizerTest {
             "org/gaul/modernizer_maven_plugin/ModernizerTest" +
                 "$IgnoreMethodReturningGenericTypeClassTest " +
                 "testMethodReturningGenericType " +
-                "java.util.List ");
+                "java.util.List");
         Collection<ViolationOccurrence> occurences = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
             NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethodName)

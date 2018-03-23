@@ -116,7 +116,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     element.getAnnotation(SuppressWarnings.class).value());
             if (warnings.contains("modernizer")) {
                 if (element.getKind().isClass()) {
-                    annotatedClasses.add(getClassHeader(element));
+                    annotatedClasses.add(
+                        getClassHeaderRegex(element));
                 } else if (element.getKind().equals(ElementKind.METHOD) ||
                     element.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     annotatedMethods.add(getMethodIdentifierString(element));
@@ -168,6 +169,13 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         }
     }
 
+    /* Return class header in a regex format
+     * to perform necessary checks in the plugin
+     */
+    private String getClassHeaderRegex(Element classElement) {
+        return getClassHeader(classElement).replace("$", "\\$") + "(\\$.+)?";
+    }
+
     private String getClassHeader(Element classElement) {
         String packageName = processingEnv
             .getElementUtils()
@@ -177,7 +185,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             .replace('.', '/');
         String packagePrefix = !packageName.isEmpty() ? packageName + "/" : "";
         String classHeader = packagePrefix + getFullClassName(classElement);
-        return classHeader.replace("$", "\\$") + "(\\$.+)?";
+        return classHeader;
     }
 
     private String getFullClassName(Element classElement) {
@@ -209,36 +217,47 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         ExecutableType method =
             methodElement.asType().accept(executableTypeVisitor, null);
         List<? extends TypeMirror> methodParams = method.getParameterTypes();
+
+        /* Fetching the return type of the method in the format ASM
+         * parses the return type in a method descriptor.
+         */
         TypeMirror returnType = method.getReturnType();
         String returnTypeString = "";
         if (returnType.getKind().equals(TypeKind.ARRAY)) {
-            returnTypeString = getArrayType(returnType);
+            returnTypeString = getArray(returnType);
         } else {
-            returnTypeString = getParameterType(returnType);
+            returnTypeString = getParameter(returnType);
         }
-        String fullClassPattern =
-            getClassHeader(methodElement.getEnclosingElement());
-        String fullClassName =
-            fullClassPattern.substring(0, fullClassPattern.indexOf('('))
-            .replace("\\$", "$");
+
         String methodArguments = "";
+
+        /* For an inner class constructor, adding the outer class object as an
+         * argument.
+         * Example:
+         * fullClassName = "org.gaul.example_package.OuterClass$InnerClass"
+         * methodArguments += "org.gaul.example_package.OuterClass"
+         */
+        String fullClassName =
+            getClassHeader(methodElement.getEnclosingElement());
         if (methodElement.getKind().equals(ElementKind.CONSTRUCTOR)) {
             int index = fullClassName.lastIndexOf("$");
             if (index != -1) {
                 methodArguments += fullClassName.substring(0, index) + " ";
             }
         }
-        methodArguments += getMethodArguments(methodParams);
-        methodArguments = methodArguments.replace('/', '.')
-            .replace("$", ".");
-        methodArguments = !methodArguments.isEmpty() ?
-            methodArguments.substring(0, methodArguments.length() - 1) :
-            methodArguments;
-        return fullClassName + " " + methodElement.getSimpleName() + " " +
-            returnTypeString + " " + methodArguments;
+
+        methodArguments += getMethodArgumentTypes(methodParams);
+        return ModernizerAnnotationOutput.getMethodRep(
+            fullClassName, methodElement.getSimpleName().toString(),
+            returnTypeString, methodArguments);
     }
 
-    private String getMethodArguments(List<? extends TypeMirror> methodParams) {
+    /* Fetching the method arguments in the format the way ASM parses a method
+     * descriptor
+     */
+    private String getMethodArgumentTypes(
+        List<? extends TypeMirror> methodParams
+    ) {
         if (methodParams.isEmpty()) {
             return "";
         }
@@ -246,9 +265,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         for (TypeMirror param : methodParams) {
             String arg;
             if (param.getKind().equals(TypeKind.ARRAY)) {
-                arg = getArrayType(param);
+                arg = getArray(param);
             } else {
-                arg = getParameterType(param);
+                arg = getParameter(param);
             }
             methodArguments.append(arg);
             methodArguments.append(" ");
@@ -256,22 +275,51 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         return methodArguments.toString();
     }
 
-    public final String getArrayType(TypeMirror param) {
+    /* Fetching the parameter string and returning it along with the
+     * array dimensions. This is done to format it the way ASM parses it.
+     * Example:
+     * #1 - Genreric type
+     * Input: "java.util.List<String>[]"
+     * paramType = "java.util.List<String>"
+     * Output: "java.lang.List[][]"
+     * #2 - Type Varaiable
+     * Input: "E[]"
+     * paramType = "E"
+     * Output: "java.lang.Object[]"
+     * #3 - Primitive type
+     * Input: "int[]"
+     * paramType = "int"
+     * Output: "int[]"
+     */
+    public final String getArray(TypeMirror param) {
         int arrayLength = 0;
         TypeMirror paramType = param;
-        while (param.getKind().equals(TypeKind.ARRAY)) {
-            param = ((ArrayType) param).getComponentType();
+        while (paramType.getKind().equals(TypeKind.ARRAY)) {
+            paramType = ((ArrayType) paramType).getComponentType();
             arrayLength++;
         }
-        if (param.getKind().isPrimitive()) {
-            return paramType.toString();
-        }
-        return getParameterType(param) + Strings.repeat("[]", arrayLength);
+        return getParameter(paramType) +
+            Strings.repeat("[]", arrayLength);
     }
 
-    public final String getParameterType(TypeMirror param) {
+    /* Fetching the parameter string by formatting type variables and
+     * generic types the way ASM parses.
+     * This is done to perform the necessary checks against the ASM parsed
+     * parameters in the plugin.
+     * Example:
+     * #1 - Generic type
+     * Input: "java.lang.List<String>"
+     * Output: "java.lang.List"
+     * #2 - Type Varaiable
+     * Input: "E"
+     * Output: "java.lang.Object"
+     * #3 - Primitive type
+     * Input: "int"
+     * Output: "int"
+     */
+    public final String getParameter(TypeMirror param) {
         if (param.getKind().equals(TypeKind.TYPEVAR)) {
-            return "java.lang.Object";
+            return Object.class.getName();
         } else {
             String paramString = param.toString();
             if (paramString.contains("<")) {

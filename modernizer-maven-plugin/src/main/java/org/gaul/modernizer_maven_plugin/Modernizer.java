@@ -28,6 +28,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.google.common.base.Strings;
+
+import org.gaul.modernizer_annotation_processor.ModernizerAnnotationOutput;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -168,7 +171,8 @@ final class ModernizerClassVisitor extends ClassVisitor {
         }
         for (String itr : interfaces) {
             Violation violation = violations.get(itr);
-            checkToken(itr, violation, name, /*lineNumber=*/ -1, "", "");
+            checkToken(itr, violation, name, /*lineNumber=*/ -1,
+            /* methodName=*/"", /* methodDescriptor=*/"");
         }
     }
 
@@ -247,7 +251,8 @@ final class ModernizerClassVisitor extends ClassVisitor {
         if (ignoreClass()) {
             return true;
         }
-        if (!methodName.isEmpty() && !methodDescriptor.isEmpty() &&
+        if (!Strings.isNullOrEmpty(methodName) &&
+            !Strings.isNullOrEmpty(methodDescriptor) &&
             ignoreMethod(methodName, methodDescriptor)) {
             return true;
         }
@@ -275,15 +280,13 @@ final class ModernizerClassVisitor extends ClassVisitor {
 
     private boolean ignoreMethod(String methodName, String methodDescriptor) {
         String returnType = Type.getReturnType(methodDescriptor).getClassName();
-        StringBuilder arguments = new StringBuilder("");
+        StringBuilder arguments = new StringBuilder();
         for (Type arg : Type.getArgumentTypes(methodDescriptor)) {
-            arguments.append(" ");
             arguments.append(arg.getClassName());
+            arguments.append(" ");
         }
-        String methodDescription =
-            className + " " + methodName + " " +
-            (returnType + " " + arguments.toString().trim())
-            .replace('$', '.');
+        String methodDescription = ModernizerAnnotationOutput.getMethodRep(
+            className, methodName, returnType, arguments.toString());
         if (ignoreMethods.contains(methodDescription)) {
             return true;
         }

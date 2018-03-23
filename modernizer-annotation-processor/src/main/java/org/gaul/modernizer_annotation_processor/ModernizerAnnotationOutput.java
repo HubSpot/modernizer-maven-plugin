@@ -36,4 +36,22 @@ public final class ModernizerAnnotationOutput {
         }
         return classOutputDir;
     }
+
+    /* Returns the method representation by standardizing the format of
+     * the processor output and ASM output in the plugin.
+     */
+    public static String getMethodRep(
+        String className,
+        String methodName,
+        String returnType,
+        String arguments
+    ) {
+        String returnTypeAndArguments =
+            (returnType.trim() +
+            (!arguments.isEmpty() ? " " + arguments : ""))
+            .replace('$', '.')
+            .replace('/', '.');
+        return className + " " + methodName + " " +
+            returnTypeAndArguments.trim();
+    }
 }
