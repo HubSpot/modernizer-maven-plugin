@@ -17,6 +17,9 @@
 package org.gaul.modernizer_annotation_processor;
 
 import java.io.File;
+import java.util.List;
+
+import com.google.common.base.Joiner;
 
 public final class ModernizerAnnotationOutput {
 
@@ -37,18 +40,24 @@ public final class ModernizerAnnotationOutput {
         return classOutputDir;
     }
 
-    /* Returns the method representation by standardizing the format of
+    /**
+     * Returns the method representation by standardizing the format of
      * the processor output and ASM output in the plugin.
+     * @param className Name of the class in which the method is present
+     * @param methodName Name of the method
+     * @param returnType Return type of the method
+     * @param arguments A list of formal parameters of the method
+     * @return A string concatenating the input parameters with spaces
      */
     public static String getMethodRep(
         String className,
         String methodName,
         String returnType,
-        String arguments
+        List<String> arguments
     ) {
         String returnTypeAndArguments =
             (returnType.trim() +
-            (!arguments.isEmpty() ? " " + arguments : ""))
+            (!arguments.isEmpty() ? " " + Joiner.on(" ").join(arguments) : ""))
             .replace('$', '.')
             .replace('/', '.');
         return className + " " + methodName + " " +

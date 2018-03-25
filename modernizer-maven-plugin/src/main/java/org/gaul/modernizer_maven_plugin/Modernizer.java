@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -172,7 +173,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
         for (String itr : interfaces) {
             Violation violation = violations.get(itr);
             checkToken(itr, violation, name, /*lineNumber=*/ -1,
-            /* methodName=*/"", /* methodDescriptor=*/"");
+            /* methodName=*/ "", /* methodDescriptor=*/ "");
         }
     }
 
@@ -235,7 +236,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
         if (violation != null && !exclusions.contains(token) &&
                 javaVersion >= violation.getVersion() &&
                 !ignorePackages.contains(packageName)) {
-            if (checkExclusions(token, methodName, methodDescriptor)) {
+            if (shouldIgnore(token, methodName, methodDescriptor)) {
                 return;
             }
             occurrences.add(new ViolationOccurrence(name, lineNumber,
@@ -243,7 +244,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
         }
     }
 
-    private boolean checkExclusions(
+    private boolean shouldIgnore(
         String token,
         String methodName,
         String methodDescriptor
@@ -281,12 +282,14 @@ final class ModernizerClassVisitor extends ClassVisitor {
     private boolean ignoreMethod(String methodName, String methodDescriptor) {
         String returnType = Type.getReturnType(methodDescriptor).getClassName();
         StringBuilder arguments = new StringBuilder();
+        List<String> args = new ArrayList<String>();
         for (Type arg : Type.getArgumentTypes(methodDescriptor)) {
+            args.add(arg.getClassName());
             arguments.append(arg.getClassName());
             arguments.append(" ");
         }
         String methodDescription = ModernizerAnnotationOutput.getMethodRep(
-            className, methodName, returnType, arguments.toString());
+            className, methodName, returnType, args);
         if (ignoreMethods.contains(methodDescription)) {
             return true;
         }
