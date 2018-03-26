@@ -281,12 +281,9 @@ final class ModernizerClassVisitor extends ClassVisitor {
 
     private boolean ignoreMethod(String methodName, String methodDescriptor) {
         String returnType = Type.getReturnType(methodDescriptor).getClassName();
-        StringBuilder arguments = new StringBuilder();
         List<String> args = new ArrayList<String>();
         for (Type arg : Type.getArgumentTypes(methodDescriptor)) {
             args.add(arg.getClassName());
-            arguments.append(arg.getClassName());
-            arguments.append(" ");
         }
         String methodDescription = ModernizerAnnotationUtils.getMethodRep(
             className, methodName, returnType, args);
