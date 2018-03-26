@@ -175,7 +175,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
      * Returns class header in a regex format
      * to perform necessary checks in the plugin.
      * @param classElement The element of kind ElementKind.CLASS whose
-     *                     full class name is to be returned
+     * full class name is to be returned
      * @return Regular expression of the full class name of the given element
      */
     private String getClassHeaderRegex(Element classElement) {
@@ -228,11 +228,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
          * Fetching the return type of the method in the format ASM
          * parses the return type in a method descriptor.
          */
-        TypeMirror returnType = method.getReturnType();
-        final String returnTypeString;
-        returnTypeString = getRepresentation(returnType);
+        final String returnType;
+        returnType = getRepresentation(method.getReturnType());
 
-        List<String> methodArgs = new ArrayList<String>();
+        List<String> methodArguments = new ArrayList<String>();
 
         /*
          * For a non-static inner class constructor, adding the outer class
@@ -249,15 +248,15 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             if (!modifiers.contains(Modifier.STATIC)) {
                 int index = fullClassName.lastIndexOf("$");
                 if (index != -1) {
-                    methodArgs.add(fullClassName.substring(0, index));
+                    methodArguments.add(fullClassName.substring(0, index));
                 }
             }
         }
 
-        methodArgs.addAll(getMethodArgumentTypes(methodParams));
+        methodArguments.addAll(getMethodArgumentTypes(methodParams));
         return ModernizerAnnotationOutput.getMethodRep(
             fullClassName, methodElement.getSimpleName().toString(),
-            returnTypeString, methodArgs);
+            returnType, methodArguments);
     }
 
     /**
@@ -267,8 +266,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
      * of an executable type
      * @return A list of all the arguments after formatting
      * Example:
-     * Input: {@code int[][], String, List<Integer>}
-     * Output: {"int[][]", "String", "java.util.List"}
+     * Input: {@code {int[][], String, List<Integer>}}
+     * Output: {@code {"int[][]", "String", "java.util.List"}}
      */
     private List<String> getMethodArgumentTypes(
         List<? extends TypeMirror> methodParams
@@ -276,13 +275,13 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         if (methodParams.isEmpty()) {
             return Collections.emptyList();
         }
-        List<String> args = new ArrayList<String>();
+        List<String> methodArguments = new ArrayList<String>();
         for (TypeMirror param : methodParams) {
             String arg;
             arg = getRepresentation(param);
-            args.add(arg);
+            methodArguments.add(arg);
         }
-        return args;
+        return methodArguments;
     }
 
     /**
@@ -294,26 +293,27 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
      * @return A string representation of the input similar
      * to the representation by ASM
      * Example:
-     * #1 - Generic type
-     * Input: {@code "java.lang.List<String>"}
+     *
+     * Generic type
+     * Input: {@code java.lang.List<String>}
      * Output: {@code "java.lang.List"}
-     * #2 - Type Variable
-     * Input: {@code "E"}
+     *
+     * Type Variable
+     * Input: {@code E}
      * Output: {@code "java.lang.Object"}
-     * #3 - Primitive type
-     * Input: {@code "int"}
+     *
+     * Primitive type
+     * Input: {@code int}
      * Output: {@code "int"}
-     * #4 - Genreric type
-     * Input: {@code "java.util.List<String>[]"}
-     * paramType = {@code "java.util.List<String>"}
-     * Output: {@code "java.lang.List[][]"}
-     * #5 - Type Variable
-     * Input: {@code "E[]"}
-     * paramType = {@code "E"}
+     *
+     * Array of type variables
+     * Input: {@code E[]}
+     * paramType = {@code E}
      * Output: {@code "java.lang.Object[]"}
-     * #6 - Primitive type
-     * Input: {@code "int[]"}
-     * paramType = {@code "int"}
+     *
+     * Array of primitive type
+     * Input: {@code int[]}
+     * paramType = {@code int}
      * Output: {@code "int[]"}
      */
     public final String getRepresentation(TypeMirror param) {
@@ -330,10 +330,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             return Object.class.getName();
         } else {
             String paramString = param.toString();
-            if (paramString.contains("<")) {
-                return paramString.substring(0, paramString.indexOf("<"));
-            }
-            return paramString;
+            int index = paramString.indexOf("<");
+            return index == -1 ? paramString : paramString.substring(0, index);
         }
     }
 }
