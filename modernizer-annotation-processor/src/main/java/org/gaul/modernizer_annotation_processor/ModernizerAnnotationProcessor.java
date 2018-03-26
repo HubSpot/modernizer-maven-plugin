@@ -122,7 +122,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                         getClassHeaderRegex(element));
                 } else if (element.getKind().equals(ElementKind.METHOD) ||
                     element.getKind().equals(ElementKind.CONSTRUCTOR)) {
-                    annotatedMethods.add(getMethodIdentifierString(element));
+                    annotatedMethods.add(getMethodRepresentation(element));
                 }
             }
         }
@@ -210,7 +210,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         return className.toString() + classElement.getSimpleName();
     }
 
-    private String getMethodIdentifierString(Element methodElement) {
+    private String getMethodRepresentation(Element methodElement) {
         TypeVisitor<ExecutableType, Void> executableTypeVisitor =
             new SimpleTypeVisitor6<ExecutableType, Void>() {
                 @Override
@@ -224,21 +224,16 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             methodElement.asType().accept(executableTypeVisitor, null);
         List<? extends TypeMirror> methodParams = method.getParameterTypes();
 
-        /*
-         * Fetching the return type of the method in the format ASM
-         * parses the return type in a method descriptor.
-         */
-        final String returnType;
-        returnType = getRepresentation(method.getReturnType());
+        final String returnType = getRepresentation(method.getReturnType());
 
-        List<String> methodArguments = new ArrayList<String>();
+        List<String> methodParamReps = new ArrayList<String>();
 
         /*
          * For a non-static inner class constructor, adding the outer class
          * object as an argument.
          * Example:
          * fullClassName = "org.gaul.example_package.OuterClass$InnerClass"
-         * methodArguments += "org.gaul.example_package.OuterClass"
+         * methodParamReps += "org.gaul.example_package.OuterClass"
          */
         String fullClassName =
             getClassHeader(methodElement.getEnclosingElement());
@@ -248,40 +243,38 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             if (!modifiers.contains(Modifier.STATIC)) {
                 int index = fullClassName.lastIndexOf("$");
                 if (index != -1) {
-                    methodArguments.add(fullClassName.substring(0, index));
+                    methodParamReps.add(fullClassName.substring(0, index));
                 }
             }
         }
 
-        methodArguments.addAll(getMethodArgumentTypes(methodParams));
+        methodParamReps.addAll(getRepresentations(methodParams));
         return ModernizerAnnotationOutput.getMethodRep(
             fullClassName, methodElement.getSimpleName().toString(),
-            returnType, methodArguments);
+            returnType, methodParamReps);
     }
 
     /**
-     * Fetches the method arguments in the format the way ASM parses a method
+     * Fetches the method parameters in the format the way ASM parses a method
      * descriptor.
      * @param methodParams A list of types of formal parameters
      * of an executable type
-     * @return A list of all the arguments after formatting
+     * @return A list of all the parameters after formatting
      * Example:
      * Input: {@code {int[][], String, List<Integer>}}
      * Output: {@code {"int[][]", "String", "java.util.List"}}
      */
-    private List<String> getMethodArgumentTypes(
+    private List<String> getRepresentations(
         List<? extends TypeMirror> methodParams
     ) {
         if (methodParams.isEmpty()) {
             return Collections.emptyList();
         }
-        List<String> methodArguments = new ArrayList<String>();
+        List<String> methodParamReps = new ArrayList<String>();
         for (TypeMirror param : methodParams) {
-            String arg;
-            arg = getRepresentation(param);
-            methodArguments.add(arg);
+            methodParamReps.add(getRepresentation(param));
         }
-        return methodArguments;
+        return methodParamReps;
     }
 
     /**
@@ -317,7 +310,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
      * Output: {@code "int[]"}
      */
     public final String getRepresentation(TypeMirror param) {
-        if (param.getKind().equals(TypeKind.ARRAY)) {
+        switch (param.getKind()) {
+        case ARRAY:
             int arrayLength = 0;
             TypeMirror paramType = param;
             while (paramType.getKind().equals(TypeKind.ARRAY)) {
@@ -326,9 +320,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             }
             return getRepresentation(paramType) +
                 Strings.repeat("[]", arrayLength);
-        } else if (param.getKind().equals(TypeKind.TYPEVAR)) {
+        case TYPEVAR:
             return Object.class.getName();
-        } else {
+        default:
             String paramString = param.toString();
             int index = paramString.indexOf("<");
             return index == -1 ? paramString : paramString.substring(0, index);

@@ -48,6 +48,18 @@ public final class ModernizerAnnotationOutput {
      * @param returnType Return type of the method
      * @param arguments A list of formal parameters of the method
      * @return A string concatenating the input parameters with spaces
+     * Example:
+     * Processor invocation
+     * Input: {@code "ExampleTest$InnerClassTest", "<init>", "void",
+     * "ExampleTest.InnerClassTest"}
+     * Output: {@code "ExampleTest$InnerClassTest <init> void
+     * ExampleTest.InnerClassTest" }
+     *
+     * Plugin invocation
+     * Input: {@code "ExampleTest$InnerClassTest", "<init>", "void",
+     * "ExampleTest$InnerClassTest"}
+     * Output: {@code "ExampleTest$InnerClassTest <init> void
+     * ExampleTest.InnerClassTest"}
      */
     public static String getMethodRep(
         String className,
@@ -55,12 +67,10 @@ public final class ModernizerAnnotationOutput {
         String returnType,
         List<String> arguments
     ) {
-        String returnTypeAndArguments =
-            (returnType.trim() +
-            (!arguments.isEmpty() ? " " + Joiner.on(" ").join(arguments) : ""))
-            .replace('$', '.')
-            .replace('/', '.');
-        return className + " " + methodName + " " +
-            returnTypeAndArguments.trim();
+        String returnTypeAndArguments = returnType +
+            (!arguments.isEmpty() ? " " + Joiner.on(" ").join(arguments) : "");
+        returnTypeAndArguments =
+            returnTypeAndArguments.replace('$', '.').replace('/', '.');
+        return className + " " + methodName + " " + returnTypeAndArguments;
     }
 }
