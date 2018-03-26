@@ -252,11 +252,6 @@ final class ModernizerClassVisitor extends ClassVisitor {
         if (ignoreClass()) {
             return true;
         }
-        if (!Strings.isNullOrEmpty(methodName) &&
-            !Strings.isNullOrEmpty(methodDescriptor) &&
-            ignoreMethod(methodName, methodDescriptor)) {
-            return true;
-        }
         for (Pattern pattern : exclusionPatterns) {
             if (pattern.matcher(token).matches()) {
                 return true;
@@ -266,6 +261,11 @@ final class ModernizerClassVisitor extends ClassVisitor {
             if (packageName.startsWith(prefix + ".")) {
                 return true;
             }
+        }
+        if (!Strings.isNullOrEmpty(methodName) &&
+            !Strings.isNullOrEmpty(methodDescriptor) &&
+            ignoreMethod(methodName, methodDescriptor)) {
+            return true;
         }
         return false;
     }

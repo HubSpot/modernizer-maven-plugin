@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -61,25 +60,20 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         private List<String> annotatedClasses;
         private List<String> annotatedMethods;
 
-        AnnotatedElements() {
-            annotatedClasses = new ArrayList<String>();
-            annotatedMethods = new ArrayList<String>();
+        AnnotatedElements(
+            List<String> annotatedClasses,
+            List<String> annotatedMethods
+        ) {
+            this.annotatedClasses = annotatedClasses;
+            this.annotatedMethods = annotatedMethods;
         }
 
         public List<String> getAnnotatedClasses() {
             return annotatedClasses;
         }
 
-        public void setAnnotatedClasses(List<String> annotatedClasses) {
-            this.annotatedClasses = annotatedClasses;
-        }
-
         public List<String> getAnnotatedMethods() {
             return annotatedMethods;
-        }
-
-        public void setAnnotatedMethods(List<String> annotatedMethods) {
-            this.annotatedMethods = annotatedMethods;
         }
     }
 
@@ -110,7 +104,6 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         RoundEnvironment roundEnv,
         TypeElement annotation
     ) {
-        AnnotatedElements elements = new AnnotatedElements();
         List<String> annotatedClasses = new ArrayList<String>();
         List<String> annotatedMethods = new ArrayList<String>();
         for (Element element : roundEnv.getElementsAnnotatedWith(annotation)) {
@@ -119,16 +112,14 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             if (warnings.contains("modernizer")) {
                 if (element.getKind().isClass()) {
                     annotatedClasses.add(
-                        getClassHeaderRegex(element));
+                        getFullClassNameRegex(element));
                 } else if (element.getKind().equals(ElementKind.METHOD) ||
                     element.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     annotatedMethods.add(getMethodRepresentation(element));
                 }
             }
         }
-        elements.setAnnotatedClasses(annotatedClasses);
-        elements.setAnnotatedMethods(annotatedMethods);
-        return elements;
+        return new AnnotatedElements(annotatedClasses, annotatedMethods);
     }
 
 
@@ -172,29 +163,52 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     /**
-     * Returns class header in a regex format
-     * to perform necessary checks in the plugin.
+     * Returns a formatted version of the fully qualified class name
+     * regular expression of the element to perform the necessary
+     * checks in the plugin against the ASM parsed class name.
      * @param classElement The element of kind ElementKind.CLASS whose
-     * full class name is to be returned
-     * @return Regular expression of the full class name of the given element
+     * formatted fully qualified class name regex is to be returned
+     * @return Formatted fully qualified class name regex of the given element
+     * after formatting it the way ASM parses a class name
+     * Example:
+     * Output: "org/gaul/mypackage/ExampleClass\$TestClass(\$.+)?"
      */
-    private String getClassHeaderRegex(Element classElement) {
-        return getClassHeader(classElement).replace("$", "\\$") + "(\\$.+)?";
+    private String getFullClassNameRegex(Element classElement) {
+        return getFullClassName(classElement)
+            .replace('.', '/')
+            .replace("$", "\\$") + "(\\$.+)?";
     }
 
-    private String getClassHeader(Element classElement) {
+    /**
+     * Returns the fully qualified class name of the element
+     * of kind ElementKind.CLASS passed as a parameter.
+     * @param classElement The element of kind ElementKind.CLASS whose
+     * fully qualified class name is to be returned
+     * @return Fully qualified class name of the given element
+     * Example:
+     * Output: "org.gaul.mypackage.ExampleClass$TestClass"
+     */
+    private String getFullClassName(Element classElement) {
         String packageName = processingEnv
             .getElementUtils()
             .getPackageOf(classElement)
             .getQualifiedName()
-            .toString()
-            .replace('.', '/');
-        String packagePrefix = !packageName.isEmpty() ? packageName + "/" : "";
-        String classHeader = packagePrefix + getFullClassName(classElement);
+            .toString();
+        String packagePrefix = !packageName.isEmpty() ? packageName + "." : "";
+        String classHeader = packagePrefix + getClassName(classElement);
         return classHeader;
     }
 
-    private String getFullClassName(Element classElement) {
+    /**
+     * Returns the class name of the element of kind ElementKind.CLASS
+     * passed as a parameter. This includes the names of all the outer classes.
+     * @param classElement The element of kind ElementKind.CLASS whose
+     * class name is to be returned
+     * @return String with $ separated nested class names of the given element
+     * Example:
+     * Output: "ExampleClass$TestClass"
+     */
+    private String getClassName(Element classElement) {
         List<String> parentClasses = new ArrayList<String>();
         Element enclosingElement = classElement.getEnclosingElement();
         while (enclosingElement != null &&
@@ -211,6 +225,15 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private String getMethodRepresentation(Element methodElement) {
+        ExecutableType method = getExecutableTypeElement(methodElement);
+        return ModernizerAnnotationUtils.getMethodRep(
+        getFullClassName(methodElement.getEnclosingElement()),
+        methodElement.getSimpleName().toString(),
+        getRepresentation(method.getReturnType()),
+        getParamsRepresentation(method.getParameterTypes(), methodElement));
+    }
+
+    private ExecutableType getExecutableTypeElement(Element methodElement) {
         TypeVisitor<ExecutableType, Void> executableTypeVisitor =
             new SimpleTypeVisitor6<ExecutableType, Void>() {
                 @Override
@@ -220,24 +243,35 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     return executableType;
                 }
             };
-        ExecutableType method =
-            methodElement.asType().accept(executableTypeVisitor, null);
-        List<? extends TypeMirror> methodParams = method.getParameterTypes();
+        return methodElement.asType().accept(executableTypeVisitor, null);
+    }
 
-        final String returnType = getRepresentation(method.getReturnType());
-
+    /**
+     * Fetches the method parameters in the format the way ASM parses a method
+     * descriptor.
+     * @param methodParams A list of types of formal parameters
+     * of an executable type
+     * @param methodElement The element of executable type
+     * @return A list of all the parameters after formatting
+     * Example:
+     * Input: methodParams {@code {int[][], String, List<Integer>}}
+     * Output: {@code {"int[][]", "String", "java.util.List"}}
+     */
+    private List<String> getParamsRepresentation(
+        List<? extends TypeMirror> methodParams,
+        Element methodElement
+    ) {
         List<String> methodParamReps = new ArrayList<String>();
-
         /*
          * For a non-static inner class constructor, adding the outer class
          * object as an argument.
          * Example:
          * fullClassName = "org.gaul.example_package.OuterClass$InnerClass"
-         * methodParamReps += "org.gaul.example_package.OuterClass"
+         * methodParamReps.add("org.gaul.example_package.OuterClass")
          */
-        String fullClassName =
-            getClassHeader(methodElement.getEnclosingElement());
         if (methodElement.getKind().equals(ElementKind.CONSTRUCTOR)) {
+            String fullClassName =
+                getFullClassName(methodElement.getEnclosingElement());
             Set<Modifier> modifiers =
                 methodElement.getEnclosingElement().getModifiers();
             if (!modifiers.contains(Modifier.STATIC)) {
@@ -247,30 +281,6 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                 }
             }
         }
-
-        methodParamReps.addAll(getRepresentations(methodParams));
-        return ModernizerAnnotationUtils.getMethodRep(
-            fullClassName, methodElement.getSimpleName().toString(),
-            returnType, methodParamReps);
-    }
-
-    /**
-     * Fetches the method parameters in the format the way ASM parses a method
-     * descriptor.
-     * @param methodParams A list of types of formal parameters
-     * of an executable type
-     * @return A list of all the parameters after formatting
-     * Example:
-     * Input: {@code {int[][], String, List<Integer>}}
-     * Output: {@code {"int[][]", "String", "java.util.List"}}
-     */
-    private List<String> getRepresentations(
-        List<? extends TypeMirror> methodParams
-    ) {
-        if (methodParams.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<String> methodParamReps = new ArrayList<String>();
         for (TypeMirror param : methodParams) {
             methodParamReps.add(getRepresentation(param));
         }
