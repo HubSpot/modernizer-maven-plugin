@@ -21,14 +21,14 @@ import java.util.List;
 
 import com.google.common.base.Joiner;
 
-public final class ModernizerAnnotationOutput {
+public final class ModernizerAnnotationUtils {
 
     public static final String IGNORE_CLASSES_FILE_NAME =
         "ignore-annotated-classes.txt";
     public static final String IGNORE_METHODS_FILE_NAME =
         "ignore-annotated-methods.txt";
 
-    private ModernizerAnnotationOutput() { }
+    private ModernizerAnnotationUtils() { }
 
     public static File getOutputDir(File classOutputDir) {
         if (classOutputDir.getAbsolutePath().endsWith("/target/classes")) {

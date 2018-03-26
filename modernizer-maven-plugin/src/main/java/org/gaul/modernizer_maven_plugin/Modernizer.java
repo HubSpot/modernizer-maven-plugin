@@ -31,7 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import com.google.common.base.Strings;
 
-import org.gaul.modernizer_annotation_processor.ModernizerAnnotationOutput;
+import org.gaul.modernizer_annotation_processor.ModernizerAnnotationUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -288,7 +288,7 @@ final class ModernizerClassVisitor extends ClassVisitor {
             arguments.append(arg.getClassName());
             arguments.append(" ");
         }
-        String methodDescription = ModernizerAnnotationOutput.getMethodRep(
+        String methodDescription = ModernizerAnnotationUtils.getMethodRep(
             className, methodName, returnType, args);
         if (ignoreMethods.contains(methodDescription)) {
             return true;

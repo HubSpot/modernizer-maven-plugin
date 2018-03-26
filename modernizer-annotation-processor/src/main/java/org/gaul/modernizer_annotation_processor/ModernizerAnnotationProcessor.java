@@ -96,10 +96,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                 File outputDir = getOutputDirectory();
                 outputDir.mkdirs();
                 makeFile(new File(outputDir,
-                    ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME),
+                    ModernizerAnnotationUtils.IGNORE_CLASSES_FILE_NAME),
                     annotatedElements.getAnnotatedClasses());
                 makeFile(new File(outputDir,
-                    ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME),
+                    ModernizerAnnotationUtils.IGNORE_METHODS_FILE_NAME),
                     annotatedElements.getAnnotatedMethods());
             }
         }
@@ -165,7 +165,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                     "dummy-file.txt");
             File outputDir =
                 new File(fileObjectToGetPath.getName()).getParentFile();
-            return ModernizerAnnotationOutput.getOutputDir(outputDir);
+            return ModernizerAnnotationUtils.getOutputDir(outputDir);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -249,7 +249,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         }
 
         methodParamReps.addAll(getRepresentations(methodParams));
-        return ModernizerAnnotationOutput.getMethodRep(
+        return ModernizerAnnotationUtils.getMethodRep(
             fullClassName, methodElement.getSimpleName().toString(),
             returnType, methodParamReps);
     }

@@ -43,7 +43,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.gaul.modernizer_annotation_processor.ModernizerAnnotationOutput;
+import org.gaul.modernizer_annotation_processor.ModernizerAnnotationUtils;
 import org.xml.sax.SAXException;
 
 @Mojo(name = "modernizer", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
@@ -215,15 +215,15 @@ public final class ModernizerMojo extends AbstractMojo {
         }
 
         Collection<String> ignoreClasses = getIgnoreElements(new File(
-            ModernizerAnnotationOutput.getOutputDir(outputDirectory),
-            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME));
+            ModernizerAnnotationUtils.getOutputDir(outputDirectory),
+            ModernizerAnnotationUtils.IGNORE_CLASSES_FILE_NAME));
         for (String ignoreClass : ignoreClasses) {
             allIgnoreFullClassNamePatterns.add(Pattern.compile(ignoreClass));
         }
 
         Collection<String> ignoreTestClasses = getIgnoreElements(new File(
-            ModernizerAnnotationOutput.getOutputDir(testOutputDirectory),
-            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME));
+            ModernizerAnnotationUtils.getOutputDir(testOutputDirectory),
+            ModernizerAnnotationUtils.IGNORE_CLASSES_FILE_NAME));
         for (String ignoreTestClass : ignoreTestClasses) {
             allIgnoreFullClassNamePatterns
                 .add(Pattern.compile(ignoreTestClass));
@@ -231,11 +231,11 @@ public final class ModernizerMojo extends AbstractMojo {
 
         Set<String> allIgnoreMethodNames = new HashSet<String>();
         allIgnoreMethodNames.addAll(getIgnoreElements(new File(
-            ModernizerAnnotationOutput.getOutputDir(outputDirectory),
-            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME)));
+            ModernizerAnnotationUtils.getOutputDir(outputDirectory),
+            ModernizerAnnotationUtils.IGNORE_METHODS_FILE_NAME)));
         allIgnoreMethodNames.addAll(getIgnoreElements(new File(
-            ModernizerAnnotationOutput.getOutputDir(testOutputDirectory),
-            ModernizerAnnotationOutput.IGNORE_METHODS_FILE_NAME)));
+            ModernizerAnnotationUtils.getOutputDir(testOutputDirectory),
+            ModernizerAnnotationUtils.IGNORE_METHODS_FILE_NAME)));
 
         modernizer = new Modernizer(javaVersion, allViolations, allExclusions,
                 allExclusionPatterns, ignorePackages,
