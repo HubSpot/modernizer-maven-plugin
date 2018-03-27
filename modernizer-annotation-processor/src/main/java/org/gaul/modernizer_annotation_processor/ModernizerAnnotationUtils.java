@@ -43,35 +43,33 @@ public final class ModernizerAnnotationUtils {
     /**
      * Returns the method representation by normalizing the class name,
      * return type and parameters.
-     * @param className Name of the class in which the method is present
-     * @param methodName Name of the method
-     * @param returnType Return type of the method
-     * @param parameters A list of formal parameters of the method
-     * @return A string concatenating the input parameters with spaces
+     *
      * Example:
+     *
      * Processor invocation
      * Input: {@code
-     * "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree",
-     * "<init>", "org.gaul.example.ExampleClass.ReturnClass",
-     * {"org/gaul/example/ExampleClass$ExampleClassTwo",
-     * "org.gaul.example.ExampleClass"}}
+     *       "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree",
+     *       "<init>",
+     *       "org.gaul.example.ExampleClass.ReturnClass",
+     *       {"org/gaul/example/ExampleClass$ExampleClassTwo",
+     *        "org.gaul.example.ExampleClass"}}
      * Output: {@code
-     * "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree
-     * <init> org.gaul.example.ExampleClass.ReturnClass
-     * org.gaul.example.ExampleClass.ExampleClassTwo
-     * org.gaul.example.ExampleClass"}
+     *        "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree
+     *        <init> org.gaul.example.ExampleClass.ReturnClass
+     *        org.gaul.example.ExampleClass.ExampleClassTwo
+     *        org.gaul.example.ExampleClass"}
      *
      * Plugin invocation
      * Input: {@code
-     * "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree",
-     * "<init>", "org.gaul.example.ExampleClass$ReturnClass"
-     * {"org.gaul.example.ExampleClass.ExampleClassTwo",
-     * "org.gaul.example.ExampleClass"}}
+     *       "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree",
+     *       "<init>", "org.gaul.example.ExampleClass$ReturnClass"
+     *       {"org.gaul.example.ExampleClass.ExampleClassTwo",
+     *         "org.gaul.example.ExampleClass"}}
      * Output: {@code
-     * "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree
-     * <init> org.gaul.example.ExampleClass$ReturnClass
-     * org.gaul.example.ExampleClass.ExampleClassTwo
-     * org.gaul.example.ExampleClass"}
+     *        "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree
+     *        <init> org.gaul.example.ExampleClass$ReturnClass
+     *        org.gaul.example.ExampleClass.ExampleClassTwo
+     *        org.gaul.example.ExampleClass"}
      */
     public static String getMethodRep(
         String className,

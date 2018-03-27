@@ -86,7 +86,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
             AnnotatedElements annotatedElements =
                 getAnnotatedElements(roundEnv, annotation);
             if (!(annotatedElements.getAnnotatedClasses().isEmpty() &&
-                annotatedElements.getAnnotatedMethods().isEmpty())) {
+                annotatedElements.getAnnotatedMethods().isEmpty())
+                ) {
                 File outputDir = getOutputDirectory();
                 outputDir.mkdirs();
                 makeFile(new File(outputDir,
@@ -166,10 +167,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
      * Returns a formatted version of the fully qualified class name
      * regular expression of the element to perform the necessary
      * checks in the plugin against the ASM parsed class name.
-     * @param classElement The element of kind ElementKind.CLASS whose
-     * formatted fully qualified class name regex is to be returned
-     * @return Formatted fully qualified class name regex of the given element
-     * after formatting it the way ASM parses a class name
+     *
      * Example:
      * Output: "org/gaul/mypackage/ExampleClass\$TestClass(\$.+)?"
      */
@@ -182,9 +180,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     /**
      * Returns the fully qualified class name of the element
      * of kind ElementKind.CLASS passed as a parameter.
-     * @param classElement The element of kind ElementKind.CLASS whose
-     * fully qualified class name is to be returned
-     * @return Fully qualified class name of the given element
+     *
      * Example:
      * Output: "org.gaul.mypackage.ExampleClass$TestClass"
      */
@@ -200,11 +196,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     /**
-     * Returns the class name of the element of kind ElementKind.CLASS
-     * passed as a parameter. This includes the names of all the outer classes.
-     * @param classElement The element of kind ElementKind.CLASS whose
-     * class name is to be returned
-     * @return String with $ separated nested class names of the given element
+     * Returns the package-less class name of the provided element.
+     *
      * Example:
      * Output: "ExampleClass$TestClass"
      */
@@ -247,12 +240,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     /**
-     * Fetches the method parameters in the format the way ASM parses a method
-     * descriptor.
-     * @param methodParams A list of types of formal parameters
-     * of an executable type
-     * @param methodElement The element of executable type
-     * @return A list of all the parameters after formatting
+     * Returns the method parameters in the format the way ASM expects.
+     *
      * Example:
      * Input: methodParams {@code {int[][], String, List<Integer>}}
      * Output: {@code {"int[][]", "String", "java.util.List"}}
@@ -263,8 +252,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     ) {
         List<String> methodParamReps = new ArrayList<String>();
         /*
-         * For a non-static inner class constructor, adding the outer class
-         * object as an argument.
+         * Add the containing class as a parameter to non-static
+         * inner class constructors
+         *
          * Example:
          * fullClassName = "org.gaul.example_package.OuterClass$InnerClass"
          * methodParamReps.add("org.gaul.example_package.OuterClass")
@@ -288,13 +278,8 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     /**
-     * Fetching the parameter string by formatting type variables and
-     * generic types the way ASM parses.
-     * This is done to perform the necessary checks against the ASM parsed
-     * parameters in the plugin.
-     * @param param A formal parameter of any type
-     * @return A string representation of the input similar
-     * to the representation by ASM
+     * Returns an ASM-parsable string representation of the element.
+     *
      * Example:
      *
      * Generic type
@@ -311,12 +296,10 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
      *
      * Array of type variables
      * Input: {@code E[]}
-     * paramType = {@code E}
      * Output: {@code "java.lang.Object[]"}
      *
      * Array of primitive type
      * Input: {@code int[]}
-     * paramType = {@code int}
      * Output: {@code "int[]"}
      */
     public final String getRepresentation(TypeMirror param) {
