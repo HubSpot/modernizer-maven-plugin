@@ -42,7 +42,7 @@ public final class ModernizerAnnotationUtils {
 
     /**
      * Returns the method representation by normalizing the class name,
-     * return type, and parameters by concatenating the input strings
+     * return type, and parameters and concatenating the input strings
      * with spaces.
      */
     public static String getMethodRep(

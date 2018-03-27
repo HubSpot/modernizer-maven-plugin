@@ -44,6 +44,7 @@ import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
+import com.google.auto.common.MoreTypes;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
 
@@ -217,7 +218,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private String getMethodRepresentation(Element methodElement) {
-        ExecutableType method = getExecutableTypeElement(methodElement);
+        ExecutableType method = MoreTypes.asExecutable(methodElement.asType());
         return ModernizerAnnotationUtils.getMethodRep(
         getFullClassName(methodElement.getEnclosingElement()),
         methodElement.getSimpleName().toString(),
