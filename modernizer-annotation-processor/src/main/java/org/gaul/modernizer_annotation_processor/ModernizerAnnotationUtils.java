@@ -42,7 +42,7 @@ public final class ModernizerAnnotationUtils {
 
     /**
      * Returns the method representation by normalizing the class name,
-     * return type and parameters.
+     * return type, and parameters.
      *
      * Example:
      *

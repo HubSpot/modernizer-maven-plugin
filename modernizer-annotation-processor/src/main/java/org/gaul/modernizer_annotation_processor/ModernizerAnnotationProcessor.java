@@ -87,7 +87,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
                 getAnnotatedElements(roundEnv, annotation);
             if (!(annotatedElements.getAnnotatedClasses().isEmpty() &&
                 annotatedElements.getAnnotatedMethods().isEmpty())
-                ) {
+            ) {
                 File outputDir = getOutputDirectory();
                 outputDir.mkdirs();
                 makeFile(new File(outputDir,
@@ -240,7 +240,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     /**
-     * Returns the method parameters in the format the way ASM expects.
+     * Returns the method parameters in the format ASM expects.
      *
      * Example:
      * Input: methodParams {@code {int[][], String, List<Integer>}}
