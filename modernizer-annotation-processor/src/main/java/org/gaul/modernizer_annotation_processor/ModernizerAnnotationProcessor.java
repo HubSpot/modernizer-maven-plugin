@@ -39,8 +39,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVisitor;
-import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
@@ -224,19 +222,6 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         methodElement.getSimpleName().toString(),
         getRepresentation(method.getReturnType()),
         getParamsRepresentation(method.getParameterTypes(), methodElement));
-    }
-
-    private ExecutableType getExecutableTypeElement(Element methodElement) {
-        TypeVisitor<ExecutableType, Void> executableTypeVisitor =
-            new SimpleTypeVisitor6<ExecutableType, Void>() {
-                @Override
-                public ExecutableType visitExecutable(
-                    ExecutableType executableType, Void obj
-                ) {
-                    return executableType;
-                }
-            };
-        return methodElement.asType().accept(executableTypeVisitor, null);
     }
 
     /**
