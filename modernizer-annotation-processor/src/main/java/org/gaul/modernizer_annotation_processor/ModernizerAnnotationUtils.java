@@ -42,45 +42,17 @@ public final class ModernizerAnnotationUtils {
 
     /**
      * Returns the method representation by normalizing the class name,
-     * return type, and parameters.
-     *
-     * Example:
-     *
-     * Processor invocation
-     * Input: {@code
-     *       "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree",
-     *       "<init>",
-     *       "org.gaul.example.ExampleClass.ReturnClass",
-     *       {"org/gaul/example/ExampleClass$ExampleClassTwo",
-     *        "org.gaul.example.ExampleClass"}}
-     * Output: {@code
-     *        "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree
-     *        <init> org.gaul.example.ExampleClass.ReturnClass
-     *        org.gaul.example.ExampleClass.ExampleClassTwo
-     *        org.gaul.example.ExampleClass"}
-     *
-     * Plugin invocation
-     * Input: {@code
-     *       "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree",
-     *       "<init>", "org.gaul.example.ExampleClass$ReturnClass"
-     *       {"org.gaul.example.ExampleClass.ExampleClassTwo",
-     *         "org.gaul.example.ExampleClass"}}
-     * Output: {@code
-     *        "org/gaul/example/ExampleClass$ExampleClassTwo$ExampleClassThree
-     *        <init> org.gaul.example.ExampleClass$ReturnClass
-     *        org.gaul.example.ExampleClass.ExampleClassTwo
-     *        org.gaul.example.ExampleClass"}
+     * return type, and parameters by concatenating the input strings
+     * with spaces.
      */
     public static String getMethodRep(
         String className,
         String methodName,
         String returnType,
-        List<String> parameters
+        List<String> params
     ) {
         String returnTypeAndArguments = returnType +
-            (!parameters.isEmpty() ?
-                " " + Joiner.on(" ").join(parameters) :
-                "");
+            (!params.isEmpty() ? " " + Joiner.on(" ").join(params) : "");
         returnTypeAndArguments =
             returnTypeAndArguments.replace('$', '.').replace('/', '.');
         return className.replace('.', '/') + " " +

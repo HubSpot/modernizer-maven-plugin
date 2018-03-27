@@ -178,8 +178,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     /**
-     * Returns the fully qualified class name of the element
-     * of kind ElementKind.CLASS passed as a parameter.
+     * Returns the fully-qualified class name of the provided element.
      *
      * Example:
      * Output: "org.gaul.mypackage.ExampleClass$TestClass"
