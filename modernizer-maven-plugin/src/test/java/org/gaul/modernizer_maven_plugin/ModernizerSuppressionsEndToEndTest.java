@@ -81,12 +81,14 @@ public final class ModernizerSuppressionsEndToEndTest {
         Collections.<String>emptySet();
     private static final Collection<String> NO_IGNORED_METHODS =
         Collections.<String>emptySet();
-    private static Set<Pattern> ignoreClasses = new HashSet<Pattern>();
-    private static Set<String> ignoreMethods = new HashSet<String>();
+    private static Set<Pattern> ignoreClasses;
+    private static Set<String> ignoreMethods;
 
     @BeforeClass
     public static void setUp() throws Exception {
         violations = ModernizerTestUtils.readViolations();
+        ignoreClasses = new HashSet<Pattern>();
+        ignoreMethods = new HashSet<String>();
         String currentDirectory = System.getProperty("user.dir");
         String ignoreClassesFilePath = currentDirectory +
             "/target/modernizer/test/ignore-annotated-classes.txt";
