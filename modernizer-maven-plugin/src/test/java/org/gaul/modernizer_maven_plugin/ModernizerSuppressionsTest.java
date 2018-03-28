@@ -18,9 +18,9 @@ package org.gaul.modernizer_maven_plugin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +29,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreConstructorTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreGenericClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreGenericClassConstructorTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodInGenericClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodReturningArrayClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodReturningArrayPrimitiveTypeClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodReturningDeclaredTypeClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodReturningGenericTypeClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodReturningPrimitiveTypeClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithArrayTypeParametersTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithDeclaredTypeParametersTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithEmptyParametersTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithGenericTypeParametersTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithPrimitiveTypeParametersTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreMethodWithVoidParameterTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreOverloadedMethodInGenericClassTest;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreOverloadedMethodTestClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -48,234 +85,194 @@ public final class ModernizerSuppressionsTest {
 
     @Before
     public void setUp() throws Exception {
-        InputStream is = Modernizer.class.getResourceAsStream(
-            "/modernizer.xml");
+        violations = ModernizerTestUtils.readViolations();
+        String currentDirectory = System.getProperty("user.dir");
+        String ignoreClassesFilePath = currentDirectory +
+            "/target/modernizer/test/ignore-annotated-classes.txt";
+        String ignoreMethodsFilePath = currentDirectory +
+            "/target/modernizer/test/ignore-annotated-methods.txt";
+        for (String ignoreClass : readExclusionsFile(ignoreClassesFilePath)) {
+            ignoreClasses.add(Pattern.compile(ignoreClass));
+        }
+        ignoreMethods.addAll(readExclusionsFile(ignoreMethodsFilePath));
+    }
+
+    public Collection<String> readExclusionsFile(String filePath) {
+        InputStream is = null;
         try {
-            violations = Modernizer.parseFromXml(is);
+            File file = new File(filePath);
+            if (file.exists()) {
+                is = new FileInputStream(filePath);
+            } else {
+                is = this.getClass().getClassLoader().getResourceAsStream(
+                    filePath);
+            }
+            if (is == null) {
+                throw new RuntimeException(
+                    "Could not find exclusion file: " +
+                        filePath);
+            }
+
+            return Utils.readAllLines(is);
+        } catch (IOException ioe) {
+            throw new RuntimeException(
+                "Error reading exclusion file: " +
+                    filePath, ioe);
         } finally {
             Utils.closeQuietly(is);
         }
-        String currentDirectory = System.getProperty("user.dir");
-        File ignoreClassesFile = new File(currentDirectory,
-            "/target/modernizer/test/ignore-annotated-classes.txt");
-        File ignoreMethodsFile = new File(currentDirectory,
-            "/target/modernizer/test/ignore-annotated-methods.txt");
+    }
 
-        BufferedReader br =
-            new BufferedReader(new FileReader(ignoreClassesFile));
-        String line;
-        while ((line = br.readLine()) != null) {
-            ignoreClasses.add(Pattern.compile(line));
-        }
+    public Collection<ViolationOccurrence> getViolationsInMethods(
+        String className
+    ) throws Exception {
+        ClassReader cr = new ClassReader(className);
+        Modernizer modernizer = new Modernizer(
+            "1.6", violations, NO_EXCLUSIONS,
+            NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
+            NO_EXCLUSION_PATTERNS, ignoreMethods);
+        return modernizer.check(cr);
+    }
 
-        br = new BufferedReader(new FileReader(ignoreMethodsFile));
-        ignoreMethods = new ArrayList<String>();
-        while ((line = br.readLine()) != null) {
-            ignoreMethods.add(line);
-        }
+    public Collection<ViolationOccurrence> getViolationsInClasses(
+        String className
+    ) throws Exception {
+        ClassReader cr = new ClassReader(className);
+        Modernizer modernizer = new Modernizer(
+            "1.6", violations, NO_EXCLUSIONS,
+            NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
+            ignoreClasses, NO_IGNORED_METHODS);
+        return modernizer.check(cr);
     }
 
     @Test
     public void checkIgnoreMethodWithEmptyParameters() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithEmptyParametersTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithEmptyParametersTestClass.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithVoidParameter() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithVoidParameterTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithVoidParameterTestClass.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithPrimitiveTypeParameters()
-        throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithPrimitiveTypeParametersTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+    throws Exception {
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithPrimitiveTypeParametersTestClass.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedConstructor() throws Exception {
-        ClassReader cr = new ClassReader(
-            ModernizerTestHelper.IgnoreConstructorTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(1);
+        assertThat(getViolationsInMethods(
+            IgnoreConstructorTestClass.class.getName())
+        ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodWithGenericTypeParameters() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithGenericTypeParametersTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithGenericTypeParametersTestClass.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithDeclaredTypeParameter() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithDeclaredTypeParametersTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithDeclaredTypeParametersTestClass.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithPrimitiveAndGenericParameters()
-        throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass.class
-            .getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+    throws Exception {
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass.class
+            .getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedMethod() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreOverloadedMethodTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(1);
+        assertThat(getViolationsInMethods(
+            IgnoreOverloadedMethodTestClass.class.getName())
+        ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodWithArrayTypeParameters() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodWithArrayTypeParametersTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodWithArrayTypeParametersTestClass.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreGenericClassConstructor() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreGenericClassConstructorTestClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(1);
+        assertThat(getViolationsInMethods(
+            IgnoreGenericClassConstructorTestClass.class.getName())
+        ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodInGenericClass() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodInGenericClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodInGenericClassTest.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedMethodInGenericClass() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreOverloadedMethodInGenericClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(1);
+        assertThat(getViolationsInMethods(
+            IgnoreOverloadedMethodInGenericClassTest.class.getName())
+        ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreGenericClass() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreGenericClass.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, ignoreClasses, NO_IGNORED_METHODS)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInClasses(
+            IgnoreGenericClass.class.getName()
+        )).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningArrayOfDeclaredType()
-        throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodReturningArrayClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+    throws Exception {
+        assertThat(getViolationsInMethods(
+            IgnoreMethodReturningArrayClassTest.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningArrayOfPrimitiveType()
-        throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodReturningArrayPrimitiveTypeClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+    throws Exception {
+        assertThat(getViolationsInMethods(
+            IgnoreMethodReturningArrayPrimitiveTypeClassTest.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningPrimitiveType() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodReturningPrimitiveTypeClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodReturningPrimitiveTypeClassTest.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningDeclaredType() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodReturningDeclaredTypeClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodReturningDeclaredTypeClassTest.class.getName())
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningGenericType() throws Exception {
-        ClassReader cr = new ClassReader(ModernizerTestHelper
-            .IgnoreMethodReturningGenericTypeClassTest.class.getName());
-        Collection<ViolationOccurrence> occurences = new Modernizer(
-            "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-            NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS, ignoreMethods)
-            .check(cr);
-        assertThat(occurences).hasSize(0);
+        assertThat(getViolationsInMethods(
+            IgnoreMethodReturningGenericTypeClassTest.class.getName())
+        ).hasSize(0);
     }
-
 }

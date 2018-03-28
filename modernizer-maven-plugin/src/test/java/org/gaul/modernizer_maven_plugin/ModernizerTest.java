@@ -93,13 +93,7 @@ public final class ModernizerTest {
 
     @Before
     public void setUp() throws Exception {
-        InputStream is = Modernizer.class.getResourceAsStream(
-                "/modernizer.xml");
-        try {
-            violations = Modernizer.parseFromXml(is);
-        } finally {
-            Utils.closeQuietly(is);
-        }
+        violations = ModernizerTestUtils.readViolations();
     }
 
     @Test
