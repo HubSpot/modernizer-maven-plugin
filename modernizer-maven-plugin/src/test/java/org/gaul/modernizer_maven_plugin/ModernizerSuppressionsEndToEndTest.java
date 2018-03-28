@@ -126,7 +126,7 @@ public final class ModernizerSuppressionsEndToEndTest {
         }
     }
 
-    public Collection<ViolationOccurrence> checkViolationsInMethods(
+    private static Collection<ViolationOccurrence> checkViolationsInMethods(
         Class classToVisit
     ) throws Exception {
         ClassReader cr = new ClassReader(classToVisit.getName());
@@ -137,7 +137,7 @@ public final class ModernizerSuppressionsEndToEndTest {
         return modernizer.check(cr);
     }
 
-    public Collection<ViolationOccurrence> checkViolationsInClasses(
+    private static Collection<ViolationOccurrence> checkViolationsInClasses(
         Class classToVisit
     ) throws Exception {
         ClassReader cr = new ClassReader(classToVisit.getName());
