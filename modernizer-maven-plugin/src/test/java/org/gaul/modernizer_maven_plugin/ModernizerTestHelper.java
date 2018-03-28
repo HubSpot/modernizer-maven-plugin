@@ -214,4 +214,13 @@ public class ModernizerTestHelper {
             return new ArrayList<List<String>>();
         }
     }
+
+    protected static class IgnoreStaticOuterClassConstructor {
+        protected static class IgnoreStaticInnerClassConstructor {
+            @SuppressWarnings("modernizer")
+            IgnoreStaticInnerClassConstructor() throws Exception {
+                "".getBytes("UTF-8");
+            }
+        }
+    }
 }

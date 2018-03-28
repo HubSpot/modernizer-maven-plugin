@@ -66,6 +66,8 @@ import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
     .IgnoreOverloadedMethodInGenericClassTest;
 import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
     .IgnoreOverloadedMethodTestClass;
+import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+    .IgnoreStaticOuterClassConstructor.IgnoreStaticInnerClassConstructor;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -123,7 +125,7 @@ public final class ModernizerSuppressionsTest {
         }
     }
 
-    public Collection<ViolationOccurrence> getViolationsInMethods(
+    public Collection<ViolationOccurrence> checkViolationsInMethods(
         String className
     ) throws Exception {
         ClassReader cr = new ClassReader(className);
@@ -134,7 +136,7 @@ public final class ModernizerSuppressionsTest {
         return modernizer.check(cr);
     }
 
-    public Collection<ViolationOccurrence> getViolationsInClasses(
+    public Collection<ViolationOccurrence> checkViolationsInClasses(
         String className
     ) throws Exception {
         ClassReader cr = new ClassReader(className);
@@ -147,14 +149,14 @@ public final class ModernizerSuppressionsTest {
 
     @Test
     public void checkIgnoreMethodWithEmptyParameters() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithEmptyParametersTestClass.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithVoidParameter() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithVoidParameterTestClass.class.getName())
         ).hasSize(0);
     }
@@ -162,28 +164,28 @@ public final class ModernizerSuppressionsTest {
     @Test
     public void checkIgnoreMethodWithPrimitiveTypeParameters()
     throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithPrimitiveTypeParametersTestClass.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedConstructor() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreConstructorTestClass.class.getName())
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodWithGenericTypeParameters() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithGenericTypeParametersTestClass.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithDeclaredTypeParameter() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithDeclaredTypeParametersTestClass.class.getName())
         ).hasSize(0);
     }
@@ -191,7 +193,7 @@ public final class ModernizerSuppressionsTest {
     @Test
     public void checkIgnoreMethodWithPrimitiveAndGenericParameters()
     throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass.class
             .getName())
         ).hasSize(0);
@@ -199,42 +201,42 @@ public final class ModernizerSuppressionsTest {
 
     @Test
     public void checkIgnoreOverloadedMethod() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreOverloadedMethodTestClass.class.getName())
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodWithArrayTypeParameters() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodWithArrayTypeParametersTestClass.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreGenericClassConstructor() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreGenericClassConstructorTestClass.class.getName())
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodInGenericClass() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodInGenericClassTest.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedMethodInGenericClass() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreOverloadedMethodInGenericClassTest.class.getName())
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreGenericClass() throws Exception {
-        assertThat(getViolationsInClasses(
+        assertThat(checkViolationsInClasses(
             IgnoreGenericClass.class.getName()
         )).hasSize(0);
     }
@@ -242,7 +244,7 @@ public final class ModernizerSuppressionsTest {
     @Test
     public void checkIgnoreMethodReturningArrayOfDeclaredType()
     throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodReturningArrayClassTest.class.getName())
         ).hasSize(0);
     }
@@ -250,29 +252,36 @@ public final class ModernizerSuppressionsTest {
     @Test
     public void checkIgnoreMethodReturningArrayOfPrimitiveType()
     throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodReturningArrayPrimitiveTypeClassTest.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningPrimitiveType() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodReturningPrimitiveTypeClassTest.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningDeclaredType() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodReturningDeclaredTypeClassTest.class.getName())
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningGenericType() throws Exception {
-        assertThat(getViolationsInMethods(
+        assertThat(checkViolationsInMethods(
             IgnoreMethodReturningGenericTypeClassTest.class.getName())
         ).hasSize(0);
+    }
+
+    @Test
+    public void checkIgnoreStaticInnerClassConstructor() throws Exception {
+        assertThat(checkViolationsInMethods(
+            IgnoreStaticInnerClassConstructor.class.getName()
+        )).hasSize(0);
     }
 }
