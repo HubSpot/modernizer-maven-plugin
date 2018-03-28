@@ -22,9 +22,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -81,13 +83,13 @@ public final class ModernizerSuppressionsEndToEndTest {
         Collections.<String>emptySet();
     private static final Collection<String> NO_IGNORED_METHODS =
         Collections.<String>emptySet();
-    private static Set<Pattern> ignoreClasses;
+    private static List<Pattern> ignoreClasses;
     private static Set<String> ignoreMethods;
 
     @BeforeClass
     public static void setUp() throws Exception {
         violations = ModernizerTestUtils.readViolations();
-        ignoreClasses = new HashSet<Pattern>();
+        ignoreClasses = new ArrayList<Pattern>();
         ignoreMethods = new HashSet<String>();
         String currentDirectory = System.getProperty("user.dir");
         String ignoreClassesFilePath = currentDirectory +
