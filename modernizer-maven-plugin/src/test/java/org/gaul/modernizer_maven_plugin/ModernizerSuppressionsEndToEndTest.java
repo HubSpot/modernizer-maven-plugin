@@ -22,13 +22,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
-
 
 import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
     .IgnoreConstructorTestClass;
@@ -68,12 +67,12 @@ import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
     .IgnoreOverloadedMethodTestClass;
 import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
     .IgnoreStaticOuterClassConstructor.IgnoreStaticInnerClassConstructor;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 
-public final class ModernizerSuppressionsTest {
-    private Map<String, Violation> violations;
+public final class ModernizerSuppressionsEndToEndTest {
+    private static Map<String, Violation> violations;
     private static final Collection<String> NO_EXCLUSIONS =
         Collections.<String>emptySet();
     private static final Collection<Pattern> NO_EXCLUSION_PATTERNS =
@@ -82,11 +81,11 @@ public final class ModernizerSuppressionsTest {
         Collections.<String>emptySet();
     private static final Collection<String> NO_IGNORED_METHODS =
         Collections.<String>emptySet();
-    private List<Pattern> ignoreClasses = new ArrayList<Pattern>();
-    private List<String> ignoreMethods = new ArrayList<String>();
+    private static Set<Pattern> ignoreClasses = new HashSet<Pattern>();
+    private static Set<String> ignoreMethods = new HashSet<String>();
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         violations = ModernizerTestUtils.readViolations();
         String currentDirectory = System.getProperty("user.dir");
         String ignoreClassesFilePath = currentDirectory +
@@ -99,15 +98,15 @@ public final class ModernizerSuppressionsTest {
         ignoreMethods.addAll(readExclusionsFile(ignoreMethodsFilePath));
     }
 
-    public Collection<String> readExclusionsFile(String filePath) {
+    public static Collection<String> readExclusionsFile(String filePath) {
         InputStream is = null;
         try {
             File file = new File(filePath);
             if (file.exists()) {
                 is = new FileInputStream(filePath);
             } else {
-                is = this.getClass().getClassLoader().getResourceAsStream(
-                    filePath);
+                is = ModernizerSuppressionsEndToEndTest.class.getClassLoader()
+                    .getResourceAsStream(filePath);
             }
             if (is == null) {
                 throw new RuntimeException(
@@ -126,9 +125,9 @@ public final class ModernizerSuppressionsTest {
     }
 
     public Collection<ViolationOccurrence> checkViolationsInMethods(
-        String className
+        Class classToVisit
     ) throws Exception {
-        ClassReader cr = new ClassReader(className);
+        ClassReader cr = new ClassReader(classToVisit.getName());
         Modernizer modernizer = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS,
             NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
@@ -137,9 +136,9 @@ public final class ModernizerSuppressionsTest {
     }
 
     public Collection<ViolationOccurrence> checkViolationsInClasses(
-        String className
+        Class classToVisit
     ) throws Exception {
-        ClassReader cr = new ClassReader(className);
+        ClassReader cr = new ClassReader(classToVisit.getName());
         Modernizer modernizer = new Modernizer(
             "1.6", violations, NO_EXCLUSIONS,
             NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
@@ -150,14 +149,14 @@ public final class ModernizerSuppressionsTest {
     @Test
     public void checkIgnoreMethodWithEmptyParameters() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithEmptyParametersTestClass.class.getName())
+            IgnoreMethodWithEmptyParametersTestClass.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithVoidParameter() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithVoidParameterTestClass.class.getName())
+            IgnoreMethodWithVoidParameterTestClass.class)
         ).hasSize(0);
     }
 
@@ -165,28 +164,28 @@ public final class ModernizerSuppressionsTest {
     public void checkIgnoreMethodWithPrimitiveTypeParameters()
     throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithPrimitiveTypeParametersTestClass.class.getName())
+            IgnoreMethodWithPrimitiveTypeParametersTestClass.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedConstructor() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreConstructorTestClass.class.getName())
+            IgnoreConstructorTestClass.class)
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodWithGenericTypeParameters() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithGenericTypeParametersTestClass.class.getName())
+            IgnoreMethodWithGenericTypeParametersTestClass.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodWithDeclaredTypeParameter() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithDeclaredTypeParametersTestClass.class.getName())
+            IgnoreMethodWithDeclaredTypeParametersTestClass.class)
         ).hasSize(0);
     }
 
@@ -194,58 +193,57 @@ public final class ModernizerSuppressionsTest {
     public void checkIgnoreMethodWithPrimitiveAndGenericParameters()
     throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass.class
-            .getName())
+            IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedMethod() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreOverloadedMethodTestClass.class.getName())
+            IgnoreOverloadedMethodTestClass.class)
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodWithArrayTypeParameters() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodWithArrayTypeParametersTestClass.class.getName())
+            IgnoreMethodWithArrayTypeParametersTestClass.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreGenericClassConstructor() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreGenericClassConstructorTestClass.class.getName())
+            IgnoreGenericClassConstructorTestClass.class)
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreMethodInGenericClass() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodInGenericClassTest.class.getName())
+            IgnoreMethodInGenericClassTest.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreOverloadedMethodInGenericClass() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreOverloadedMethodInGenericClassTest.class.getName())
+            IgnoreOverloadedMethodInGenericClassTest.class)
         ).hasSize(1);
     }
 
     @Test
     public void checkIgnoreGenericClass() throws Exception {
         assertThat(checkViolationsInClasses(
-            IgnoreGenericClass.class.getName()
-        )).hasSize(0);
+            IgnoreGenericClass.class)
+        ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningArrayOfDeclaredType()
     throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodReturningArrayClassTest.class.getName())
+            IgnoreMethodReturningArrayClassTest.class)
         ).hasSize(0);
     }
 
@@ -253,35 +251,35 @@ public final class ModernizerSuppressionsTest {
     public void checkIgnoreMethodReturningArrayOfPrimitiveType()
     throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodReturningArrayPrimitiveTypeClassTest.class.getName())
+            IgnoreMethodReturningArrayPrimitiveTypeClassTest.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningPrimitiveType() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodReturningPrimitiveTypeClassTest.class.getName())
+            IgnoreMethodReturningPrimitiveTypeClassTest.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningDeclaredType() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodReturningDeclaredTypeClassTest.class.getName())
+            IgnoreMethodReturningDeclaredTypeClassTest.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreMethodReturningGenericType() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreMethodReturningGenericTypeClassTest.class.getName())
+            IgnoreMethodReturningGenericTypeClassTest.class)
         ).hasSize(0);
     }
 
     @Test
     public void checkIgnoreStaticInnerClassConstructor() throws Exception {
         assertThat(checkViolationsInMethods(
-            IgnoreStaticInnerClassConstructor.class.getName()
-        )).hasSize(0);
+            IgnoreStaticInnerClassConstructor.class)
+        ).hasSize(0);
     }
 }
