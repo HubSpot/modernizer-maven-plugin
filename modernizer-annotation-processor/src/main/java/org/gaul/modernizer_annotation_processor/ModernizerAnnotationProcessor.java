@@ -217,7 +217,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
     }
 
     private String getMethodRepresentation(Element methodElement) {
-        ExecutableType method = getExecutableTypeElement(methodElement);
+        ExecutableType method = getExecutableType(methodElement);
         return ModernizerAnnotationUtils.getMethodRep(
         getFullClassName(methodElement.getEnclosingElement()),
         methodElement.getSimpleName().toString(),
@@ -225,7 +225,7 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         getParamsRepresentation(method.getParameterTypes(), methodElement));
     }
 
-    private ExecutableType getExecutableTypeElement(Element methodElement) {
+    private ExecutableType getExecutableType(Element methodElement) {
         TypeVisitor<ExecutableType, Void> executableTypeVisitor =
             new SimpleTypeVisitor6<ExecutableType, Void>() {
                 @Override
