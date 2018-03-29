@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +42,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.gaul.modernizer_annotation_processor.ModernizerAnnotationUtils;
+import org.gaul.annotation_processsor.ModernizerAnnotationOutput;
 import org.xml.sax.SAXException;
 
 @Mojo(name = "modernizer", defaultPhase = LifecyclePhase.PROCESS_TEST_CLASSES,
@@ -214,32 +213,21 @@ public final class ModernizerMojo extends AbstractMojo {
             }
         }
 
-        Collection<String> ignoreClasses = getIgnoreElements(new File(
-            ModernizerAnnotationUtils.getOutputDir(outputDirectory),
-            ModernizerAnnotationUtils.IGNORE_CLASSES_FILE_NAME));
-        for (String ignoreClass : ignoreClasses) {
-            allIgnoreFullClassNamePatterns.add(Pattern.compile(ignoreClass));
+        File ignoreClassesFile = new File(
+            ModernizerAnnotationOutput.getOutputDir(outputDirectory),
+            ModernizerAnnotationOutput.IGNORE_CLASSES_FILE_NAME);
+        if (ignoreClassesFile.exists()) {
+            Collection<String> ignoreClasses =
+                readExclusionsFile(ignoreClassesFile.toString());
+            for (String ignoreClass : ignoreClasses) {
+                allIgnoreFullClassNamePatterns.add(
+                    Pattern.compile(ignoreClass));
+            }
         }
-
-        Collection<String> ignoreTestClasses = getIgnoreElements(new File(
-            ModernizerAnnotationUtils.getOutputDir(testOutputDirectory),
-            ModernizerAnnotationUtils.IGNORE_CLASSES_FILE_NAME));
-        for (String ignoreTestClass : ignoreTestClasses) {
-            allIgnoreFullClassNamePatterns
-                .add(Pattern.compile(ignoreTestClass));
-        }
-
-        Set<String> allIgnoreMethodNames = new HashSet<String>();
-        allIgnoreMethodNames.addAll(getIgnoreElements(new File(
-            ModernizerAnnotationUtils.getOutputDir(outputDirectory),
-            ModernizerAnnotationUtils.IGNORE_METHODS_FILE_NAME)));
-        allIgnoreMethodNames.addAll(getIgnoreElements(new File(
-            ModernizerAnnotationUtils.getOutputDir(testOutputDirectory),
-            ModernizerAnnotationUtils.IGNORE_METHODS_FILE_NAME)));
 
         modernizer = new Modernizer(javaVersion, allViolations, allExclusions,
                 allExclusionPatterns, ignorePackages,
-                allIgnoreFullClassNamePatterns, allIgnoreMethodNames);
+                allIgnoreFullClassNamePatterns);
 
         try {
             long count = recurseFiles(outputDirectory);
@@ -253,15 +241,6 @@ public final class ModernizerMojo extends AbstractMojo {
         } catch (IOException ioe) {
             throw new MojoExecutionException("Error reading Java classes", ioe);
         }
-    }
-
-    private Collection<String> getIgnoreElements(File ignoreFile)
-        throws MojoExecutionException {
-        Collection<String> ignoreElements = new ArrayList<String>();
-        if (ignoreFile.exists()) {
-            ignoreElements = readExclusionsFile(ignoreFile.toString());
-        }
-        return ignoreElements;
     }
 
     private static Map<String, Violation> parseViolations(
