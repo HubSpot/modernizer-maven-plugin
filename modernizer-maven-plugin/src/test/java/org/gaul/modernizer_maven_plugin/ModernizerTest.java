@@ -88,16 +88,12 @@ public final class ModernizerTest {
             Collections.<Pattern>emptySet();
     private static final Collection<String> NO_IGNORED_PACKAGES =
             Collections.<String>emptySet();
+    private static final Collection<String> NO_IGNORED_METHODS =
+            Collections.<String>emptySet();
 
     @Before
     public void setUp() throws Exception {
-        InputStream is = Modernizer.class.getResourceAsStream(
-                "/modernizer.xml");
-        try {
-            violations = Modernizer.parseFromXml(is);
-        } finally {
-            Utils.closeQuietly(is);
-        }
+        violations = ModernizerTestUtils.readViolations();
     }
 
     @Test
@@ -205,7 +201,8 @@ public final class ModernizerTest {
                 "java/lang/String.getBytes:(Ljava/lang/String;)[B");
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, exclusions, NO_EXCLUSION_PATTERNS,
-                NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS).check(cr);
+                NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(0);
     }
 
@@ -217,7 +214,8 @@ public final class ModernizerTest {
                 Pattern.compile("java/lang/.*"));
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, NO_EXCLUSIONS, exclusionPatterns,
-                NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS).check(cr);
+                NO_IGNORED_PACKAGES, NO_EXCLUSION_PATTERNS,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(0);
     }
 
@@ -229,7 +227,8 @@ public final class ModernizerTest {
                 StringGetBytesString.class.getPackage().getName());
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-                ignorePackages, NO_EXCLUSION_PATTERNS).check(cr);
+                ignorePackages, NO_EXCLUSION_PATTERNS,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(0);
     }
 
@@ -240,7 +239,8 @@ public final class ModernizerTest {
         Collection<String> ignorePackages = Collections.singleton("org.gaul");
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-                ignorePackages, NO_EXCLUSION_PATTERNS).check(cr);
+                ignorePackages, NO_EXCLUSION_PATTERNS,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(0);
     }
 
@@ -251,7 +251,8 @@ public final class ModernizerTest {
         Collection<String> ignorePackages = Collections.singleton("org");
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-                ignorePackages, NO_EXCLUSION_PATTERNS).check(cr);
+                ignorePackages, NO_EXCLUSION_PATTERNS,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(0);
     }
 
@@ -262,7 +263,8 @@ public final class ModernizerTest {
         Collection<String> ignorePackages = Collections.singleton("org.gau");
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-                ignorePackages, NO_EXCLUSION_PATTERNS).check(cr);
+                ignorePackages, NO_EXCLUSION_PATTERNS,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(1);
     }
 
@@ -274,7 +276,8 @@ public final class ModernizerTest {
                 Pattern.compile(".*StringGetBytesString"));
         Collection<ViolationOccurrence> occurrences = new Modernizer(
                 "1.6", violations, NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS,
-                NO_IGNORED_PACKAGES, ignoreClassNamePatterns).check(cr);
+                NO_IGNORED_PACKAGES, ignoreClassNamePatterns,
+                NO_IGNORED_METHODS).check(cr);
         assertThat(occurrences).hasSize(0);
     }
 
@@ -306,7 +309,7 @@ public final class ModernizerTest {
                 new Violation(name, 5, ""));
         Modernizer modernizer = new Modernizer("1.5", testViolations,
                 NO_EXCLUSIONS, NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
-                NO_EXCLUSION_PATTERNS);
+                NO_EXCLUSION_PATTERNS, NO_IGNORED_METHODS);
         ClassReader cr = new ClassReader(AnnotatedMethod.class.getName());
         Collection<ViolationOccurrence> occurences =
                 modernizer.check(cr);
@@ -376,7 +379,7 @@ public final class ModernizerTest {
     private Modernizer createModernizer(String javaVersion) {
         return new Modernizer(javaVersion, violations, NO_EXCLUSIONS,
                 NO_EXCLUSION_PATTERNS, NO_IGNORED_PACKAGES,
-                NO_EXCLUSION_PATTERNS);
+                NO_EXCLUSION_PATTERNS, NO_IGNORED_METHODS);
     }
 
     private static class CharsetsTestClass {
