@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ModernizerTestHelper {
+public class ModernizerSuppressionsEndToEndTestClass {
 
     protected static class IgnoreMethodWithEmptyParametersTestClass {
         @SuppressWarnings("modernizer")

@@ -31,43 +31,43 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreConstructorTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreGenericClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreGenericClassConstructorTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodInGenericClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodReturningArrayClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodReturningArrayPrimitiveTypeClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodReturningDeclaredTypeClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodReturningGenericTypeClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodReturningPrimitiveTypeClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithArrayTypeParametersTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithDeclaredTypeParametersTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithEmptyParametersTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithGenericTypeParametersTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithPrimitiveAndGenericTypeParametersTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithPrimitiveTypeParametersTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreMethodWithVoidParameterTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreOverloadedMethodInGenericClassTest;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreOverloadedMethodTestClass;
-import org.gaul.modernizer_maven_plugin.ModernizerTestHelper
+import org.gaul.modernizer_maven_plugin.ModernizerSuppressionsEndToEndTestClass
     .IgnoreStaticOuterClassConstructor.IgnoreStaticInnerClassConstructor;
 import org.junit.BeforeClass;
 import org.junit.Test;
