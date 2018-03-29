@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package org.gaul.modernizer_maven_plugin;
+package org.gaul.annotation_processsor;
 
-import java.io.InputStream;
-import java.util.Map;
+import java.io.File;
 
-public final class ModernizerTestUtils {
+public final class ModernizerAnnotationOutput {
 
-    private ModernizerTestUtils() { }
+    public static final String IGNORE_CLASSES_FILE_NAME =
+        "ignore-annotated-classes.txt";
 
-    public static Map<String, Violation> readViolations() throws Exception {
-        Map<String, Violation> violations;
-        InputStream is = Modernizer.class.getResourceAsStream(
-            "/modernizer.xml");
-        try {
-            violations = Modernizer.parseFromXml(is);
-        } finally {
-            Utils.closeQuietly(is);
+    private ModernizerAnnotationOutput() { }
+
+    public static File getOutputDir(File classOutputDir) {
+        if (classOutputDir.getAbsolutePath().endsWith("/target/classes") ||
+            classOutputDir.getAbsolutePath().endsWith("/target/test-classes")
+        ) {
+            return new File(classOutputDir.getParentFile(), "modernizer");
         }
-        return violations;
+        return classOutputDir;
     }
 }
