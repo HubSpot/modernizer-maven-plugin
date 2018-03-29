@@ -246,4 +246,19 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <asm.version>6.0</asm.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-commons</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>
