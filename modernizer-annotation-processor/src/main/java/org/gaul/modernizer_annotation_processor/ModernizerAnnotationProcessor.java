@@ -128,6 +128,9 @@ public class ModernizerAnnotationProcessor extends AbstractProcessor {
         File file,
         List<String> annotatedElements
     ) {
+        if (annotatedElements.isEmpty()) {
+            return;
+        }
         Writer writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(file));
