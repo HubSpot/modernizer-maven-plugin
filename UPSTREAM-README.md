@@ -1,4 +1,5 @@
 This PR allows users to suppress modernizer errors by adding `@SuppressWarnings("modernizer")` at class/method level.
+
 How can a user suppress modernizer warnings?
 
 `modernizer-annotation-processor` should be added as a provided-scoped dependency in the project.
@@ -12,12 +13,10 @@ in that block of code.
    `modernizer-maven-policy` module has checkstyle rules and is added as a dependency to `maven-checkstyle-plugin`
    in the plugin module's pom.
    `modernizer-annotation-processor` module has annotation processing code and is added as a dependency in plugin module.
-3. When a project is run, before compiling the source code in the project, annotation processor
-   scans to see if there are any methods/classes annotated as `@SuppressWarnings("modernizer")`. These annotations can be
-   found in methods or classes.
+3. When a project is run, before compiling the source code in the project, annotation processor scans to see if there are any
+   methods/classes annotated as `@SuppressWarnings("modernizer")`. These annotations can be found in methods or classes.
    1. If the annotation is on a class, the processor constructs a regex that matches the fully qualified class name of the
-   annotated class and its subclasses.
-   For every annotated class, these regex strings are constructed and added to a list.
+   annotated class and its subclasses. For every annotated class, these regex strings are constructed and added to a list.
    For example: `org/gaul/package/ClassOne\$ClassTwo(\$.+)?`
    2. If the annotation is on a method, the processor constructs a string with 4 parts, delimited by spaces - fully
    qualified class name, method name, return type, list of formal parameters. These are normalized to be compared to the format
