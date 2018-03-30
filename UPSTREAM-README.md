@@ -6,7 +6,7 @@ How can a user suppress modernizer warnings?
 Any class or method can be annotated with `@SuppressWarnings("modernizer")` to suppress all modernizer errors
 in that block of code.
 
-##Implementation strategy
+## Implementation strategy
 
 1. The code base has been organized into 3 modules.
    `modernizer-maven-plugin` module has the main plugin code.
@@ -31,14 +31,14 @@ in that block of code.
 
    We have benchmarked the plugin after this implementation, and haven't seen any performance issues.
 
-Testing strategy
+## Testing strategy
 
 `ModernizerSuppressionsEndToEndTestClass` has helper classes/methods annotated with `@SuppressWarnings("modernizer")`.
 The processor scans this class before compiling and creates the ignore files.
 End-to-end flow tests are added in `ModernizerSuppressionsEndToEndTest` which read the ignore files and check if
 violations in the code are as expected.
 
-Further improvements
+## Further improvements
 
  - The format of `ignore-methods` file could be improved by making it more structured by using XML, JSON, or YAML.
  - `@SuppressWarnings("modernizer")` blocks all modernizer errors in that code block. Suppressing specific checks/errors can
