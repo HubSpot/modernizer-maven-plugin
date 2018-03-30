@@ -41,6 +41,6 @@ We have benchmarked the plugin after this implementation, and haven't seen any p
 
  - The format of `ignore-methods` file could be improved by making it more structured by using XML, JSON, or YAML.
  - `@SuppressWarnings("modernizer")` blocks all modernizer errors in that code block. Suppressing specific checks/errors can
-   be done by adding something like an `<id>ViolationIdentifier</id>` to the violations file structure, which uniquely
+   be done by adding something like `<id>ViolationIdentifier</id>` to the violations file structure, which uniquely
    identifies each violation. We can then use `@SuppressWarnings("modernizer:ViolationIdentifier")` to suppress errors
    related to those particular checks in the code block.
