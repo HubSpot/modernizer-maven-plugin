@@ -65,8 +65,9 @@ documents all of these.  The most commonly used flags:
 
 Suppression
 -----------
-Suppressing modernizer violations might be needed in some projects. `@SuppressWarnings("modernizer")` allows fine-grained suppression of violations.
-For this, add the following to the `<dependencies>` stanza in your pom.xml
+Add `@SuppressWarnings("modernizer")` to any class or method to suppress all Modernizer violations within it.
+
+To enable this, add the following to the `<dependencies>` stanza in your pom.xml:
 
 ```xml
 <dependency>
@@ -76,8 +77,6 @@ For this, add the following to the `<dependencies>` stanza in your pom.xml
   <scope>provided</scope>
 </dependency>
 ```
-
-Any classes or methods annotated as `@SuppressWarnings("modernizer")` will be ignored from all of the modernizer checks.
 
 References
 ----------
