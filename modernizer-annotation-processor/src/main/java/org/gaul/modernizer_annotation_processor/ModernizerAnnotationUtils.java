@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package org.gaul.annotation_processsor;
+package org.gaul.modernizer_annotation_processor;
 
 import java.io.File;
+import java.util.List;
 
-public final class ModernizerAnnotationOutput {
+import com.google.common.base.Joiner;
+
+public final class ModernizerAnnotationUtils {
 
     public static final String IGNORE_CLASSES_FILE_NAME =
         "ignore-annotated-classes.txt";
     public static final String IGNORE_METHODS_FILE_NAME =
         "ignore-annotated-methods.txt";
 
-    private ModernizerAnnotationOutput() { }
+    private ModernizerAnnotationUtils() { }
 
     public static File getOutputDir(File classOutputDir) {
         if (classOutputDir.getAbsolutePath().endsWith("/target/classes")) {
@@ -35,5 +38,24 @@ public final class ModernizerAnnotationOutput {
             return new File(classOutputDir.getParentFile(), "modernizer/test");
         }
         return classOutputDir;
+    }
+
+    /**
+     * Returns the method representation by normalizing the class name,
+     * return type, and parameters and concatenating the input strings
+     * with spaces.
+     */
+    public static String getMethodRep(
+        String className,
+        String methodName,
+        String returnType,
+        List<String> params
+    ) {
+        String returnTypeAndArguments = returnType +
+            (!params.isEmpty() ? " " + Joiner.on(" ").join(params) : "");
+        returnTypeAndArguments =
+            returnTypeAndArguments.replace('$', '.').replace('/', '.');
+        return className.replace('.', '/') + " " +
+            methodName + " " + returnTypeAndArguments;
     }
 }
