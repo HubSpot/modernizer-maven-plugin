@@ -1,4 +1,5 @@
 This PR allows users to suppress modernizer errors by adding `@SuppressWarnings("modernizer")` at class/method level.
+
 How can a user suppress modernizer warnings?
 
 `modernizer-annotation-processor` should be added as a dependency in the project.
@@ -13,7 +14,7 @@ Implementation strategy
    in plugin module's pom.
    `modernizer-annotation-processor` module has annotation processing code and is added as a dependency in plugin module.
 3. When a project is run, before compiling the source code in the project, annotation processor
-   scans to see if there are any methods/classes annotated as `@SuppressWarnings("modernizer")`. It can be found in two places -
+   scans to see if there are any methods/classes annotated as `@SuppressWarnings("modernizer")`. It can be found in two places
    1. If the annotation is on a class, the processor constructs a fully qualified class name of the class and adds
    `(\$.+)?` at the end. This is the regex format.
    For every annotated class, these regex strings are constructed and added to a list.
