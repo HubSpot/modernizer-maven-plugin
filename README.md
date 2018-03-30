@@ -65,17 +65,19 @@ documents all of these.  The most commonly used flags:
 
 Suppression
 -----------
-To suppress modernizer errors, add the following to the `<dependencies>` stanza in your pom.xml
+Suppressing modernizer violations might be needed in some projects. `@SuppressWarnings("modernizer")` allows fine-grained suppression of violations.
+For this, add the following to the `<dependencies>` stanza in your pom.xml
 
 ```xml
 <dependency>
-<groupId>org.gaul</groupId>
-<artifactId>modernizer-annotation-processor</artifactId>
-<version>1.6.0</version>
+  <groupId>org.gaul</groupId>
+  <artifactId>modernizer-annotation-processor</artifactId>
+  <version>1.6.0</version>
+  <scope>provided</scope>
 </dependency>
 ```
 
-Any classes or methods annotated as `@SuppressWarnings("modernizer")` will be ignored from modernizer checks.
+Any classes or methods annotated as `@SuppressWarnings("modernizer")` will be ignored from all of the modernizer checks.
 
 References
 ----------
