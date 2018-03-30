@@ -14,7 +14,7 @@ in that block of code.
    in the plugin's pom.
    3. `modernizer-annotation-processor` has annotation processing code and is added as a dependency in plugin.
 2. When a project is run, before compiling the source code in the project, annotation processor scans to see if there are any
-   methods/classes annotated as `@SuppressWarnings("modernizer")`. These annotations can be found in methods or classes.
+   methods/classes annotated as `@SuppressWarnings("modernizer")`. These annotations can be added to methods or classes.
    1. If the annotation is on a class, the processor constructs a regex that matches the fully qualified class name of the
    annotated class and its subclasses.
    For example: `org/gaul/package/ClassOne\$ClassTwo(\$.+)?`
