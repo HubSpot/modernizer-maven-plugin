@@ -35,6 +35,7 @@
   </developers>
 
   <modules>
+    <module>modernizer-maven-annotations</module>
     <module>modernizer-maven-plugin</module>
     <module>modernizer-maven-policy</module>
   </modules>
